@@ -1,0 +1,18 @@
+
+Dir.chdir("../") do
+  require 'lib/fingerprint/version'
+
+  Gem::Specification.new do |s|
+    s.name = "Fingerprint"
+    s.version = Fingerprint::VERSION::STRING
+    s.author = "Samuel Williams"
+    s.email = "samuel@oriontransfer.org"
+    s.homepage = "http://wiki.oriontransfer.org/?fingerprint"
+    s.platform = Gem::Platform::RUBY
+    s.summary = "Fingerprint is a tool for creating checksums of entire directory structures, and comparing them for inconsistencies."
+    s.files = FileList["{bin,lib}/**/*"].to_a
+    s.require_path = "lib"
+    s.executables << 'fingerprint'
+    s.has_rdoc = false
+  end
+end

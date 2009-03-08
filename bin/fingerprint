@@ -1,0 +1,43 @@
+#!/usr/bin/env ruby
+
+# Fingerprint v2.0
+# Copyright 2007, 2008 Samuel Williams of Orion Transfer Ltd. www.oriontransfer.co.nz
+
+require 'optparse'
+require 'fingerprint'
+
+OPTIONS = {
+  :Root => "./",
+  :Mode => :scan
+}
+
+ARGV.options do |o|
+  script_name = File.basename($0)
+
+  o.set_summary_indent('  ')
+  o.banner = "Create fingerprint: #{script_name} [-r root] [fingerprint-root]\nCompare fingerprints: #{script_name} -c fingerprint-old fingerprint-new"
+  o.define_head "This script is used to calculate a basic fingerprint of a file-system structure. It can also compare fingerprints."
+
+  o.on("-c", "Compare given fingerprints") { OPTIONS[:Mode] = :check }
+
+  o.separator ""
+  o.separator "Help and Copyright information"
+
+  o.on_tail("--copy", "Display copyright information") {
+    puts "#{script_name} v#{LSync::VERSION::STRING}. Copyright (c) 2008 Samuel Williams. Released under the GPLv3."
+    puts "See http://www.oriontransfer.co.nz/ for more information."
+
+    exit
+  }
+
+  o.on_tail("-h", "--help", "Show this help message.") { puts o; exit }
+end.parse!
+
+case (OPTIONS[:Mode])
+when :scan
+  Fingerprint::Scanner.scan_dirs(ARGV)
+when :check
+  error_count = Fingerprint::Checker.check_files(ARGV[0], ARGV[1])
+  
+  exit(error_count > 0)
+end
