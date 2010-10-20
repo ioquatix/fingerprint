@@ -55,5 +55,5 @@ case (OPTIONS[:mode])
 		Fingerprint::Scanner.scan_dirs(ARGV, OPTIONS[:output] || $stdout)
 	when :check
 		error_count = Fingerprint::Checker.check_files(ARGV[0], ARGV[1])
-		exit(error_count > 0)
+		exit(error_count > 0 ? 1 : 0)
 end
