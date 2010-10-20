@@ -1,4 +1,4 @@
-# Copyright (c) 2007 Samuel Williams. Released under the GNU GPLv3.
+# Copyright (c) 2010 Samuel Williams. Released under the GNU GPLv3.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
