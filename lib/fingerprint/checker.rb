@@ -38,8 +38,6 @@ module Fingerprint
           yield($1, $2, self) unless dst.include?([$1, $2])
         end
       end
-      
-      self
     end
     
     attr :dst

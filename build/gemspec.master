@@ -7,7 +7,7 @@ Dir.chdir("../") do
     s.version = Fingerprint::VERSION::STRING
     s.author = "Samuel Williams"
     s.email = "samuel@oriontransfer.org"
-    s.homepage = "http://wiki.oriontransfer.org/?fingerprint"
+    s.homepage = "http://www.oriontransfer.co.nz/software/admin-toolbox/fingerprint"
     s.platform = Gem::Platform::RUBY
     s.summary = "Fingerprint is a tool for creating checksums of entire directory structures, and comparing them for inconsistencies."
     s.files = FileList["{bin,lib}/**/*"].to_a

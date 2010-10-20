@@ -62,9 +62,9 @@ module Fingerprint
     
     attr :output, true
     
-    def self.scan_dirs(dirs)
+    def self.scan_dirs(dirs, output = $stdout)
       scanner = Scanner.new(dirs)
-      scanner.output = STDOUT
+      scanner.output = output
       
       scanner.process
     end
