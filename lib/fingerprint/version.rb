@@ -23,7 +23,7 @@ module Fingerprint
   module VERSION
     MAJOR = 1
     MINOR = 1
-    TINY  = 0
+    TINY  = 3
 
     STRING = [MAJOR, MINOR, TINY].join('.')
   end
