@@ -8,7 +8,7 @@ Fingerprint
 Fingerprint is primarily a command line tool to compare directory structures on 
 disk. It also provides a programmatic interface for this procedure.
 
-Because Fingerprint produces output to +IO+ like structures, it is easy to transmit
+Because Fingerprint produces output to `IO` like structures, it is easy to transmit
 this data across a network, or store it for later use. As an example, it could be
 used to check the integrity of a backup.
 
