@@ -12,7 +12,9 @@ Because Fingerprint produces output to `IO` like structures, it is easy to trans
 this data across a network, or store it for later use. As an example, it could be
 used to check the integrity of a backup.
 
-For examples please see the main Fingerprint page <http://www.oriontransfer.co.nz/projects/admin-toolbox/fingerprint>.
+For examples please see the main [project page][1].
+
+[1]: http://www.oriontransfer.co.nz/projects/admin-toolbox/fingerprint
 
 License
 -------

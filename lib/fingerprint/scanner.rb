@@ -31,7 +31,7 @@ module Fingerprint
 	class Scanner
 		# Initialize the scanner to scan a given set of directories in order.
 		# [+options[:excludes]+]  An array of regular expressions of files to avoid indexing.
-		# [+options[:output]+]    An +IO+ to output the results of the index to.
+		# [+options[:output]+]    An +IO+ where the results will be written.
 		def initialize(roots, options = {})
 			@roots = roots
 
