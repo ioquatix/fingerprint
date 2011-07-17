@@ -33,7 +33,7 @@ OPTIONS = {
 ARGV.options do |o|
 	script_name = File.basename($0)
 
-	o.banner = "Usage: #{script_name} [options]"
+	o.banner = "Usage: #{script_name} [options] [path]"
 	o.define_head "This script is used to calculate and compare a basic file system fingerprint."
 
 	o.on("-c", "Compare the given fingerprints. Check that the second fingerprint is a superset of the first.") do
@@ -65,6 +65,16 @@ case (OPTIONS[:mode])
 	when :scan
 		roots = ARGV
 		roots << Dir.pwd if roots.size == 0
+		
+		# Check that all supplied paths exist
+		roots.delete_if do |root|
+			if File.exist? root
+				false
+			else
+				$stderr.puts "Path #{root} doesn't exist, skipping!"
+				true
+			end
+		end
 		
 		options = {}
 		options[:verbose] = true if OPTIONS[:verbose]
