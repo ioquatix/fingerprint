@@ -1,17 +1,21 @@
-= Fingerprint
+Fingerprint
+===========
 
-Author::    Samuel G. D. Williams (http://www.oriontransfer.co.nz)
-Copyright:: Copyright (C) 2010, 2011 Samuel G. D. Williams
-License::   MIT
+* Author: Samuel G. D. Williams (<http://www.oriontransfer.co.nz>)
+* Copyright (C) 2010, 2011 Samuel G. D. Williams.
+* Released under the MIT license.
 
 Fingerprint is primarily a command line tool to compare directory structures on 
 disk. It also provides a programmatic interface for this procedure.
 
-Because Fingerprint produces output to `IO` like structures, it is easy to transmit
+Because Fingerprint produces output to +IO+ like structures, it is easy to transmit
 this data across a network, or store it for later use. As an example, it could be
 used to check the integrity of a backup.
 
-== License
+For examples please see the main Fingerprint page <http://www.oriontransfer.co.nz/projects/admin-toolbox/fingerprint>.
+
+License
+-------
 
 Copyright (c) 2010, 2011 Samuel G. D. Williams. <http://www.oriontransfer.co.nz>
 

@@ -10,8 +10,8 @@ Dir.chdir("../") do
 		s.homepage = "http://www.oriontransfer.co.nz/projects/admin-toolbox/fingerprint"
 		s.platform = Gem::Platform::RUBY
 		s.summary = "Fingerprint is a tool for creating checksums of entire directory structures, and comparing them for inconsistencies."
-		s.files = FileList["{bin,lib}/**/*"].to_a
-		s.require_path = "lib"
+		s.files = FileList["{bin,lib}/**/*"].to_a + ["README.md"]
+
 		s.executables << 'fingerprint'
 
 		s.has_rdoc = "yard"
