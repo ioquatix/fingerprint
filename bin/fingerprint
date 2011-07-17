@@ -26,7 +26,8 @@ require 'fingerprint'
 OPTIONS = {
 	:root => "./",
 	:mode => :scan,
-	:output => nil
+	:output => nil,
+	:verbose => false
 }
 
 ARGV.options do |o|
@@ -41,6 +42,10 @@ ARGV.options do |o|
 	
 	o.on("-o [output-path]", String, "Write the fingerprint output to the given file.") do |path|
 		OPTIONS[:output] = File.open(path, "w")
+	end
+	
+	o.on("--verbose", "Verbose output, include additional details in the file transcript.") do
+		OPTIONS[:verbose] = true
 	end
 
 	o.separator ""
@@ -58,7 +63,14 @@ end.parse!
 
 case (OPTIONS[:mode])
 	when :scan
-		Fingerprint::Scanner.scan_dirs(ARGV, OPTIONS[:output] || $stdout)
+		roots = ARGV
+		roots << Dir.pwd if roots.size == 0
+		
+		options = {}
+		options[:verbose] = true if OPTIONS[:verbose]
+		options[:output] = OPTIONS[:output] || $stdout
+		
+		Fingerprint::Scanner.scan_paths(roots, options)
 	when :check
 		error_count = Fingerprint::Checker.check_files(ARGV[0], ARGV[1])
 		exit(error_count > 0 ? 1 : 0)

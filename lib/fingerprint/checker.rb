@@ -21,67 +21,93 @@
 require 'set'
 
 module Fingerprint
-  # Check that every file specified in fp2 exists in fp1 correctly,
-  # i.e. ensure that the fingerprint fp2 accurately is a superset of
-  # fp1
-  class Checker
-    def initialize(fp1, fp2)
-      @fp1 = fp1
-      @fp2 = fp2
-      @mismatches = []
-    end
-    
-    def check (&block)
-      @fp1.seek(0)
-      @fp2.seek(0)
-      
-      @dst = Set.new
-      @dst_paths = {}
-      @dst_hashes = {}
-      
-      # Parse original fingerprint
-      @fp2.each_line do |line|
-        if line.chomp.match(/^([a-fA-F0-9]{32}): (.*)$/)
-          @dst.add([$1, $2])
+	# Given two fingerprints (master and copy) ensures that the copy has at least everything contained
+	# in master: For every file in the master, a corresponding file must exist in the copy. This means that
+	# there may be extraneous files in the copy, but ensures that every file in the master has been replicated
+	# accurately.
+	#
+	# At this time, this implementation may require a large amount of memory, proportional to the number of
+	# files being checked.
+	#
+	# Master and copy are +IO+ objects corresponding to the output produced by +Fingerprint::Scanner+.
+	class Checker
+		def initialize(master, copy, options = {})
+			@master = master
+			@copy = copy
+			
+			@mismatches = []
+			
+			@options = options
+			
+			@failures = []
+		end
 
-          @dst_paths[$2] = $1
-          @dst_hashes[$1] ||= Set.new
-          @dst_hashes[$1].add($2)
-        end
-      end
-      
-      # For every file in the src, we check that it exists
-      # in the destination:
-      @fp1.each_line do |line|
-        if line.chomp.match(/^([a-fA-F0-9]{32}): (.*)$/)
-          yield($1, $2, self) unless dst.include?([$1, $2])
-        end
-      end
-    end
-    
-    attr :dst
-    attr :dst_paths
-    attr :dst_hashes
-    
-    def self.check_files(p1, p2)
-      puts "Comparing src: #{p1.dump} with dst: #{p2.dump}..."
-      error_count = 0 
-      checker = Checker.new(File.open(p1), File.open(p2))
-      
-      checker.check do |hash, path|
-        error_count += 1
-        
-        if !checker.dst_paths[path]
-          puts "Source file: #{path.dump} does not exist in destination!"
-        elsif checker.dst_paths[path] != hash
-          puts "Destination file: #{path.dump} is different!"
-        else
-          puts "Unknown error for path: #{path.dump}"
-        end
-      end
-      
-      return error_count
-    end
-    
-  end
+		# Run the checking process.
+		def check (options = {}, &block)
+			@files = Set.new
+			@file_paths = {}
+			@file_hashes = {}
+
+			# Parse original fingerprint
+			@copy.each_line do |line|
+				# Skip comments
+				next if line.match(/^\s+#/)
+				
+				if line.chomp.match(/^([a-fA-F0-9]{32}): (.*)$/)
+					@files.add([$1, $2])
+
+					@file_paths[$2] = $1
+					@file_hashes[$1] ||= Set.new
+					@file_hashes[$1].add($2)
+				end
+			end
+
+			# For every file in the src, we check that it exists
+			# in the destination:
+			@master.each_line do |line|
+				# Skip comments
+				next if line.match(/^\s+#/)
+				
+				if line.chomp.match(/^([a-fA-F0-9]{32}): (.*)$/)
+					unless @files.include?([$1, $2])
+						yield($1, $2) if block_given?
+						@failures << [$1, $2]
+					end
+				end
+			end
+		end
+		
+		# A list of files which either did not exist in the copy, or had the wrong checksum.
+		attr :failures
+		
+		# An array of all files in the copy
+		attr :files
+		
+		# A hash of all files in copy +path => file hash+
+		attr :file_paths
+		
+		# A hash of all files in copy +file hash => [file1, file2, ...]+
+		attr :file_hashes
+
+		# Helper function to check two fingerprint files.
+		def self.check_files(master, copy, &block)
+			error_count = 0 
+			checker = Checker.new(File.open(master), File.open(copy))
+
+			checker.check do |hash, path|
+				error_count += 1
+
+				if !checker.file_paths[path]
+					$stderr.puts "Source file: #{path.dump} does not exist in destination!"
+				elsif checker.file_paths[path] != hash
+					$stderr.puts "Destination file: #{path.dump} is different!"
+				else
+					$stderr.puts "Unknown error for path: #{path.dump}"
+				end
+			end
+
+			return error_count
+		end
+
+	end
 end
