@@ -92,17 +92,21 @@ module Fingerprint
 		# Helper function to check two fingerprint files.
 		def self.check_files(master, copy, &block)
 			error_count = 0 
-			checker = Checker.new(File.open(master), File.open(copy))
+			
+			master = File.open(master) unless master.respond_to? :read
+			copy = File.open(copy) unless copy.respond_to? :read
+			
+			checker = Checker.new(master, copy)
 
 			checker.check do |hash, path|
 				error_count += 1
 
 				if !checker.file_paths[path]
-					$stderr.puts "Source file: #{path.dump} does not exist in destination!"
+					$stderr.puts "File #{path.dump} is missing!"
 				elsif checker.file_paths[path] != hash
-					$stderr.puts "Destination file: #{path.dump} is different!"
+					$stderr.puts "File #{path.dump} is different!"
 				else
-					$stderr.puts "Unknown error for path: #{path.dump}"
+					$stderr.puts "Unknown error for path #{path.dump}"
 				end
 			end
 

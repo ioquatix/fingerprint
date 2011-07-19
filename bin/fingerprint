@@ -21,13 +21,16 @@
 # THE SOFTWARE.
 
 require 'optparse'
+require 'pathname'
 require 'fingerprint'
 
 OPTIONS = {
 	:root => "./",
 	:mode => :scan,
 	:output => nil,
-	:verbose => false
+	:verbose => false,
+	:force => false,
+	:name => "._fingerprint.txt"
 }
 
 ARGV.options do |o|
@@ -35,6 +38,30 @@ ARGV.options do |o|
 
 	o.banner = "Usage: #{script_name} [options] [path]"
 	o.define_head "This script is used to calculate and compare a basic file system fingerprint."
+
+	o.separator ""
+	o.separator "Directory analysis and verification:"
+	
+	o.on("--analyze [path]", String, "Generage a fingerprint of the given path and save it for later verification.") do |path|
+		OPTIONS[:mode] = :analyze
+		OPTIONS[:root] = path
+	end
+	
+	o.on("--verify [path]", String, "Verify a given path based on a previously saved fingerprint.") do |path|
+		OPTIONS[:mode] = :verify
+		OPTIONS[:root] = path
+	end
+	
+	o.on("-n name", String, "Specify the name of the fingerprint file (default #{OPTIONS[:name]}).") do |name|
+		OPTIONS[:name] = name
+	end
+	
+	o.on("-f", "Force any operation to complete despite warnings.") do
+		OPTIONS[:force] = true
+	end
+	
+	o.separator ""
+	o.separator "Low level operations:"
 
 	o.on("-c", "Compare the given fingerprints. Check that the second fingerprint is a superset of the first.") do
 		 OPTIONS[:mode] = :check
@@ -49,19 +76,59 @@ ARGV.options do |o|
 	end
 
 	o.separator ""
-	o.separator "Help and Copyright information"
+	o.separator "Help and Copyright information:"
 
 	o.on_tail("--copy", "Display copyright information") {
-		puts "#{script_name} v#{Fingerprint::VERSION::STRING}. Copyright (c) 2010 Samuel Williams. Released under the GPLv3."
-		puts "See http://www.oriontransfer.co.nz/ for more information."
+		$stderr.puts "#{script_name} v#{Fingerprint::VERSION::STRING}. Copyright (c) 2011 Samuel Williams. Released under the MIT license."
+		$stderr.puts "See http://www.oriontransfer.co.nz/ for more information."
 
 		exit
 	}
 
-	o.on_tail("-h", "--help", "Show this help message.") { puts o; exit }
+	o.on_tail("-h", "--help", "Show this help message.") { $stderr.puts o; exit }
 end.parse!
 
+unless File.directory? OPTIONS[:root]
+	$stderr.puts "Path #{OPTIONS[:root]} doesn't exist!"
+	exit(255)
+end
+
 case (OPTIONS[:mode])
+	when :analyze
+		output_file = Pathname.new(OPTIONS[:root]) + OPTIONS[:name]
+		
+		if output_file.exist? && !OPTIONS[:force]
+			$stderr.puts "Output file #{output_file} already exists. Aborting."
+			exit(2)
+		end
+		
+		options = {}
+		options[:verbose] = true if OPTIONS[:verbose]
+		
+		File.open(output_file, "w") do |io|
+			options[:output] = io
+			
+			Fingerprint::Scanner.scan_paths([OPTIONS[:root]], options)
+		end
+	when :verify
+		error_count = 0
+		
+		input_file = Pathname.new(OPTIONS[:root]) + OPTIONS[:name]
+		
+		scanner = Fingerprint::Scanner.scan_paths([OPTIONS[:root]])
+		scanner.output.seek(0)
+		
+		File.open(input_file, "r") do |io|
+			error_count += Fingerprint::Checker.check_files(io, scanner.output)
+		end
+		
+		if error_count == 0
+			$stderr.puts "Data verified, 0 errors found."
+			exit(0)
+		else
+			$stderr.puts "Data inconsistent, #{error_count} errors found!"
+			exit(1)
+		end
 	when :scan
 		roots = ARGV
 		roots << Dir.pwd if roots.size == 0
