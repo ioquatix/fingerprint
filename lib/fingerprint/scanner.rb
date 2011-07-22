@@ -110,12 +110,13 @@ module Fingerprint
 								output_dir(path)
 							end
 						else
-							unless excluded?(path)
-								checksummed_count += 1
-								output_file(path)
-							else
+							# Skip anything that isn't a valid file (e.g. pipes, sockets, symlinks).
+							if excluded?(path) || File.symlink?(path) || !File.file?(path)
 								excluded_count += 1
 								output_excluded(path)
+							else
+								checksummed_count += 1
+								output_file(path)
 							end
 						end
 					end
