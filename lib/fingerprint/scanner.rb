@@ -66,7 +66,7 @@ module Fingerprint
 
 			@output.puts "#{d.hexdigest}: #{path}"
 		end
-		
+
 		# Add information about excluded paths.
 		def output_excluded(path)
 			if @options[:verbose]
@@ -79,7 +79,7 @@ module Fingerprint
 		# Returns true if the given path should be excluded.
 		def excluded?(path)
 			@excludes.each do |exclusion|
-				if exclusion.match(path)
+				if path.match(exclusion)
 					return true
 				end
 			end

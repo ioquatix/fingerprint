@@ -103,6 +103,7 @@ case (OPTIONS[:mode])
 		end
 		
 		options = {}
+		options[:excludes] = [OPTIONS[:name]]
 		options[:verbose] = true if OPTIONS[:verbose]
 		
 		File.open(output_file, "w") do |io|
