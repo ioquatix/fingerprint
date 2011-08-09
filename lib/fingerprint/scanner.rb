@@ -23,10 +23,7 @@ require 'find'
 require 'digest'
 
 module Fingerprint
-	
-	# The default pattern for excluding files.
-	DEFAULT_EXCLUDES = [/\/\.[^\/]+$/, /\~$/]
-	
+
 	# The scanner class can scan a set of directories and produce an index.
 	class Scanner
 		# Initialize the scanner to scan a given set of directories in order.
@@ -35,7 +32,7 @@ module Fingerprint
 		def initialize(roots, options = {})
 			@roots = roots
 
-			@excludes = options[:excludes] || DEFAULT_EXCLUDES
+			@excludes = options[:excludes] || []
 			@output = options[:output] || StringIO.new
 			
 			@options = options
@@ -89,7 +86,7 @@ module Fingerprint
 
 			return false
 		end
-		
+
 		# Run the scanning process.
 		def scan
 			excluded_count = 0
@@ -111,7 +108,7 @@ module Fingerprint
 							end
 						else
 							# Skip anything that isn't a valid file (e.g. pipes, sockets, symlinks).
-							if excluded?(path) || File.symlink?(path) || !File.file?(path)
+							if excluded?(path) || File.symlink?(path) || !File.file?(path) || !File.readable?(path)
 								excluded_count += 1
 								output_excluded(path)
 							else
