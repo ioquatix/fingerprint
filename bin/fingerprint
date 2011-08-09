@@ -115,6 +115,11 @@ case (OPTIONS[:mode])
 		
 		input_file = Pathname.new(OPTIONS[:root]) + OPTIONS[:name]
 		
+		unless File.exist? input_file
+			$stderr.puts "Can't find index #{input_file}. Aborting."
+			exit(3)
+		end
+		
 		scanner = Fingerprint::Scanner.scan_paths([OPTIONS[:root]])
 		scanner.output.seek(0)
 		
