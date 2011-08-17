@@ -28,13 +28,12 @@ module Fingerprint
 		master = Scanner.new([master_path])
 		copy = Scanner.new([copy_path])
 		
-		master.scan
-		copy.scan
+		master_recordset = Recordset.new
+		copy_recordset = SparseRecordset.new(copy)
 		
-		master.output.seek(0)
-		copy.output.seek(0)
+		master.scan(master_recordset)
 		
-		checker = Checker.new(master.output, copy.output)
+		checker = Checker.new(master_recordset, copy_recordset)
 		checker.check(&block)
 		
 		return checker

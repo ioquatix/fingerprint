@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'set'
+require 'fingerprint/record'
 
 module Fingerprint
 	# Given two fingerprints (master and copy) ensures that the copy has at least everything contained
@@ -35,80 +35,100 @@ module Fingerprint
 			@master = master
 			@copy = copy
 			
-			@mismatches = []
-			
 			@options = options
-			
-			@failures = []
 		end
+
+		attr :master
+		attr :copy
 
 		# Run the checking process.
 		def check (options = {}, &block)
-			@files = Set.new
-			@file_paths = {}
-			@file_hashes = {}
-
-			# Parse original fingerprint
-			@copy.each_line do |line|
-				# Skip comments
-				next if line.match(/^\s+#/)
-				
-				if line.chomp.match(/^([a-fA-F0-9]{32}): (.*)$/)
-					@files.add([$1, $2])
-
-					@file_paths[$2] = $1
-					@file_hashes[$1] ||= Set.new
-					@file_hashes[$1].add($2)
-				end
-			end
-
 			# For every file in the src, we check that it exists
 			# in the destination:
-			@master.each_line do |line|
-				# Skip comments
-				next if line.match(/^\s+#/)
-				
-				if line.chomp.match(/^([a-fA-F0-9]{32}): (.*)$/)
-					unless @files.include?([$1, $2])
-						yield($1, $2) if block_given?
-						@failures << [$1, $2]
+			
+			total_count = @master.records.count
+			processed_size = 0
+			total_size = @master.records.inject(0) { |count, record| count + (record['file.size'] || 0).to_i }
+			
+			@master.records.each_with_index do |record, processed_count|
+				next if record.mode != :file
+
+				result, message = @copy.compare(record)
+				if result != :valid
+					yield record, result, message
+				elsif @options[:extended]
+					# Extended check compares other attributes such as user, group, file modes.
+					changes = record.diff(copy.paths[record.path])
+					
+					if changes.size > 0
+						yield record, :attribute_changed, "Attribute(s) #{changes.join(', ')} changed"
 					end
+				end
+				
+				if @options[:progress]
+					$stderr.puts "# Progress: File #{processed_count} / #{total_count} = #{sprintf('%0.2f%', processed_count.to_f / total_count.to_f * 100.0)}; Byte #{processed_size} / #{total_size} = #{sprintf('%0.2f%', processed_size.to_f / total_size.to_f * 100.0)}"
+
+					processed_size += (record['file.size'] || 0).to_i
 				end
 			end
 		end
 		
 		# A list of files which either did not exist in the copy, or had the wrong checksum.
 		attr :failures
-		
-		# An array of all files in the copy
-		attr :files
-		
-		# A hash of all files in copy +path => file hash+
-		attr :file_paths
-		
-		# A hash of all files in copy +file hash => [file1, file2, ...]+
-		attr :file_hashes
 
-		# Helper function to check two fingerprint files.
-		def self.check_files(master, copy, &block)
-			error_count = 0 
+		def self.check_files(master, copy, options = {}, &block)
+			# New API that takes two Recordsets...
 			
-			master = File.open(master) unless master.respond_to? :read
-			copy = File.open(copy) unless copy.respond_to? :read
-			
-			checker = Checker.new(master, copy)
+			File.open(master) do |master_file|
+				File.open(copy) do |copy_file|
+					master_recordset = Recordset.new
+					master_recordset.parse(master_file)
+					
+					copy_recordset = Recordset.new
+					copy_recordset.parse(copy_file)
 
-			checker.check do |hash, path|
-				error_count += 1
-
-				if !checker.file_paths[path]
-					$stderr.puts "File #{path.dump} is missing!"
-				elsif checker.file_paths[path] != hash
-					$stderr.puts "File #{path.dump} is different!"
-				else
-					$stderr.puts "Unknown error for path #{path.dump}"
+					verify(master_recordset, copy_recordset, options, &block)
 				end
 			end
+		end
+
+		# Helper function to check two fingerprint files.
+		def self.verify(master, copy, options = {}, &block)
+			error_count = 0 
+
+			errors = options.delete(:recordset) || Recordset.new
+			if options[:output]
+				errors = RecordsetPrinter.new(errors, options[:output])
+			end
+
+			checker = Checker.new(master, copy, options)
+
+			checker.check do |record, result, message|
+				error_count += 1
+				copy = checker.copy.paths[record.path]
+
+				metadata = {
+					'error.code' => result,
+					'error.message' => message
+				}
+
+				if copy
+					changes = record.diff(copy)
+
+					changes.each do |name|
+						metadata["changes.#{name}.old"] = record[name]
+						metadata["changes.#{name}.new"] = copy[name]
+					end
+
+					errors << Record.new(:warning, record.path, metadata)
+				else
+					errors << Record.new(:warning, record.path, metadata)
+				end
+			end
+
+			errors << Record.new(:summary, nil, {
+				'error.count' => error_count
+			})
 
 			return error_count
 		end
