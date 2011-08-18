@@ -108,7 +108,6 @@ module Fingerprint
 
 			# Extended information
 			if @options[:extended]
-				metadata['posix.time.created'] = File.ctime(path)
 				metadata['posix.time.modified'] = File.mtime(path)
 
 				metadata['posix.mode'] = stat.mode.to_s(8)
