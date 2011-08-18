@@ -10,11 +10,22 @@ disk. It also provides a programmatic interface for this procedure.
 
 Because Fingerprint produces output to `IO` like structures, it is easy to transmit
 this data across a network, or store it for later use. As an example, it could be
-used to check the integrity of a backup.
+used to check the integrity of a remote backup.
 
-For examples please see the main [project page][1].
+For examples and documentation please see the main [project page][1].
 
-[1]: http://www.oriontransfer.co.nz/projects/admin-toolbox/fingerprint
+[1]: http://www.oriontransfer.co.nz/gems/fingerprint
+
+Todo
+----
+
+* Command line option to show files that have been created (e.g. don't exist in master fingerprint).
+* Command line option to show files that have changed but have the same modified time (hardware corrutpion).
+* Command line option to check fingerprint files based on checksums, e.g. duplicate files, unique files, over a set of directories.
+* Command line tool for extracting duplicate and unique files over a set of directories?
+* Supporting tools for signing fingerprints easily.
+* Support indexing specific files as well as whole directories (maybe?).
+* Support general filenames for `--archive`, e.g. along with `-n`, maybe support a file called `index.fingerprint` by default: improved visibility for end user.
 
 License
 -------
