@@ -26,6 +26,7 @@ Todo
 * Supporting tools for signing fingerprints easily.
 * Support indexing specific files as well as whole directories (maybe?).
 * Support general filenames for `--archive`, e.g. along with `-n`, maybe support a file called `index.fingerprint` by default: improved visibility for end user.
+* Because fingerprint is currently IO bound in terms of performance, single-threaded checksumming is fine, but for SSD and other fast storage, it might be possible to improve speed somewhat by using a map-reduce style approach.
 
 License
 -------
