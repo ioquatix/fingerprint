@@ -30,7 +30,7 @@ OPTIONS = {
 	:output => $stdout,
 	:verbose => false,
 	:force => false,
-	:name => "._index.fingerprint",
+	:name => "index.fingerprint",
 	:extended => false,
 	:checksums => Fingerprint::DEFAULT_CHECKSUMS,
 }
