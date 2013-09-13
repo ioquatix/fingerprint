@@ -29,27 +29,28 @@ require 'fingerprint'
 
 require 'timeout'
 
-class CommandTest < Test::Unit::TestCase
-
+class TestFingerprint < Test::Unit::TestCase
 	def test_analyze_verify
+		File.open("junk.txt", "w") { |fp| fp.write("foobar") }
+		
 		result = system("fingerprint --analyze ./ -f")
 		
 		File.open("junk.txt", "w") { |fp| fp.write("foobar") }
 		
 		result = system("fingerprint --verify ./")
 		
-		assert_equal result, true
+		assert_equal true, result
 		
 		File.open("junk.txt", "w") { |fp| fp.write("foobaz") }
 		
-		result = system("fingerprint --verify ./")
+		result = system("fingerprint -X --verify ./")
 		
-		assert_equal result, false
+		assert_equal false, result
 	end
 
 	def test_check_paths
 		errors = 0
-		test_path = File.dirname(__FILE__) + '/test'
+		test_path = File.dirname(__FILE__)
 		
 		Fingerprint::check_paths(test_path, test_path) do |record, result, message|
 			errors += 1
@@ -57,5 +58,4 @@ class CommandTest < Test::Unit::TestCase
 		
 		assert_equal errors, 0
 	end
-
 end

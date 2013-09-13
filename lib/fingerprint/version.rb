@@ -20,11 +20,5 @@
 
 
 module Fingerprint
-  module VERSION
-    MAJOR = 1
-    MINOR = 4
-    TINY  = 0
-
-    STRING = [MAJOR, MINOR, TINY].join('.')
-  end
+	VERSION = "1.4.0"
 end

@@ -35,7 +35,7 @@ OPTIONS = {
 	:extended => false,
 	:checksums => Fingerprint::DEFAULT_CHECKSUMS,
 	:additions => false,
-	:failures_exit_status => 0,
+	:failures => :ignore,
 }
 
 ARGV.options do |o|
@@ -101,15 +101,15 @@ ARGV.options do |o|
 		OPTIONS[:progress] = true
 	end
 	
-	o.on("-X", "Give a non-zero exit code if errors are detected by check or verify.") do
-		OPTIONS[:failures_exit_status] = 1
+	o.on("--die", "Give a non-zero exit code if errors are detected by check or verify.") do
+		OPTIONS[:failures] = :die
 	end
 	
 	o.separator ""
 	o.separator "Help and Copyright information:"
 
 	o.on_tail("--copy", "Display copyright and warranty information") do
-		$stderr.puts "#{script_name} v#{Fingerprint::VERSION::STRING}. Copyright (c) 2011 Samuel Williams."
+		$stderr.puts "#{script_name} v#{Fingerprint::VERSION}. Copyright (c) 2011 Samuel Williams."
 		$stderr.puts "This software is released under the MIT license and comes with ABSOLUTELY NO WARRANTY."
 		$stderr.puts "See http://www.oriontransfer.co.nz/ for more information."
 		exit
@@ -136,7 +136,7 @@ def finish_check(error_count)
 		exit(0)
 	else
 		$stderr.puts "Data inconsistent, #{error_count} errors found!"
-		exit(OPTIONS[:failures_exit_status])
+		exit(OPTIONS[:failures] == :die ? 1 : 0)
 	end
 end
 

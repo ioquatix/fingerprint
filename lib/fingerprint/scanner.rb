@@ -71,7 +71,7 @@ module Fingerprint
 				'options.extended' => @options[:extended] == true,
 				'options.checksums' => @options[:checksums].join(', '),
 				'summary.time.start' => Time.now,
-				'fingerprint.version' => Fingerprint::VERSION::STRING
+				'fingerprint.version' => Fingerprint::VERSION
 			})
 		end
 
