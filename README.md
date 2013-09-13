@@ -27,7 +27,7 @@ Or install it yourself as:
 
 ## Usage
 
-Please refer to the [online documentation][http://www.codeotaku.com/projects/fingerprint/documentation/introduction].
+Please refer to the [online documentation](http://www.codeotaku.com/projects/fingerprint/documentation/introduction).
 
 ## Todo
 
