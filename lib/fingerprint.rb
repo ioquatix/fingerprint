@@ -18,6 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+require 'fingerprint/record'
 require 'fingerprint/version'
 require 'fingerprint/scanner'
 require 'fingerprint/checker'
@@ -28,12 +29,13 @@ module Fingerprint
 		master = Scanner.new([master_path])
 		copy = Scanner.new([copy_path])
 		
-		master_recordset = Recordset.new
-		copy_recordset = SparseRecordset.new(copy)
+		master_recordset = RecordSet.new
+		copy_recordset = SparseRecordSet.new(copy)
 		
 		master.scan(master_recordset)
 		
 		checker = Checker.new(master_recordset, copy_recordset)
+		
 		checker.check(&block)
 		
 		return checker

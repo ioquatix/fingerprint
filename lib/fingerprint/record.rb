@@ -32,7 +32,7 @@ module Fingerprint
 	}
 
 	class Record
-		def initialize(mode, path, metadata)
+		def initialize(mode, path, metadata = {})
 			@mode = mode
 			@path = path
 
@@ -67,7 +67,7 @@ module Fingerprint
 			options = {}
 			
 			options[:extended] = true if @metadata['options.extended'] == 'true'
-			options[:checksum] = @metadata['options.checksums'].split(/[\s,]+/) if @metadata['options.checksums']
+			options[:checksums] = @metadata['options.checksums'].split(/[\s,]+/) if @metadata['options.checksums']
 			
 			return options
 		end
@@ -83,12 +83,12 @@ module Fingerprint
 		end
 	end
 	
-	class Recordset
+	class RecordSet
 		def initialize
 			@records = []
 			@paths = {}
 			@keys = {}
-
+			
 			@configuration = nil
 
 			@callback = nil
@@ -107,8 +107,10 @@ module Fingerprint
 				@configuration = record
 			else
 				@paths[record.path] = record
-				record.keys.each do |key, value|
-					@keys[key] = value
+				record.keys.each do |key|
+					@keys[key] ||= {}
+					
+					@keys[key][record[key]] = record
 				end
 			end
 		end
@@ -117,18 +119,24 @@ module Fingerprint
 			return @paths[path]
 		end
 
-		def find(record)
-			result = lookup(record.path)
-
-			return result if result
-
-			@record.keys.each do |key, value|
+		def find_by_key(record)
+			record.keys.each do |key|
+				value = record[key]
+				
 				result = @keys[key][value]
 
 				return result if result
 			end
 
 			return nil
+		end
+
+		def find(record)
+			result = lookup(record.path)
+
+			return result if result
+
+			return find_by_key(record)
 		end
 
 		def compare(other)
@@ -218,7 +226,7 @@ module Fingerprint
 	end
 	
 	# This record set dynamically computes data from the disk as required.
-	class SparseRecordset < Recordset
+	class SparseRecordSet < RecordSet
 		def initialize(scanner)
 			super()
 			
@@ -234,7 +242,7 @@ module Fingerprint
 		end
 	end
 	
-	class RecordsetWrapper
+	class RecordSetWrapper
 		def initialize(recordset)
 			@recordset = recordset
 		end
@@ -248,7 +256,7 @@ module Fingerprint
 		end
 	end
 	
-	class RecordsetPrinter < RecordsetWrapper
+	class RecordSetPrinter < RecordSetWrapper
 		def initialize(recordset, output)
 			super(recordset)
 			@output = output
@@ -256,7 +264,7 @@ module Fingerprint
 
 		def <<(record)
 			record.write(@output)
-			@recordset << record
+			@recordset << record if @recordset
 		end
 	end
 end

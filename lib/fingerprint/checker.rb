@@ -42,15 +42,26 @@ module Fingerprint
 		attr :copy
 
 		# Run the checking process.
-		def check (options = {}, &block)
+		def check (&block)
 			# For every file in the src, we check that it exists
 			# in the destination:
-			
 			total_count = @master.records.count
 			processed_size = 0
 			total_size = @master.records.inject(0) { |count, record| count + (record['file.size'] || 0).to_i }
 			
+			if @options[:additions]
+				copy_paths = @copy.paths.dup
+			else
+				copy_paths = {}
+			end
+			
 			@master.records.each_with_index do |record, processed_count|
+				copy_paths.delete(record.path)
+
+				if @options[:progress]
+					$stderr.puts "# Checking: #{record.path}"
+				end
+
 				next if record.mode != :file
 
 				result, message = @copy.compare(record)
@@ -66,9 +77,17 @@ module Fingerprint
 				end
 				
 				if @options[:progress]
-					$stderr.puts "# Progress: File #{processed_count} / #{total_count} = #{sprintf('%0.2f%', processed_count.to_f / total_count.to_f * 100.0)}; Byte #{processed_size} / #{total_size} = #{sprintf('%0.2f%', processed_size.to_f / total_size.to_f * 100.0)}"
+					$stderr.puts "# Progress: File #{processed_count} / #{total_count}; Byte #{processed_size} / #{total_size} = #{sprintf('%0.2f%', processed_size.to_f / total_size.to_f * 100.0)}"
 
 					processed_size += (record['file.size'] || 0).to_i
+				end
+			end
+			
+			if @options[:additions]
+				copy_paths.each do |path, record|
+					next unless record.mode == :file || record.mode == :directory
+					
+					yield record, :addition, "File added"
 				end
 			end
 		end
@@ -77,14 +96,14 @@ module Fingerprint
 		attr :failures
 
 		def self.check_files(master, copy, options = {}, &block)
-			# New API that takes two Recordsets...
+			# New API that takes two RecordSets...
 			
 			File.open(master) do |master_file|
 				File.open(copy) do |copy_file|
-					master_recordset = Recordset.new
+					master_recordset = RecordSet.new
 					master_recordset.parse(master_file)
 					
-					copy_recordset = Recordset.new
+					copy_recordset = RecordSet.new
 					copy_recordset.parse(copy_file)
 
 					verify(master_recordset, copy_recordset, options, &block)
@@ -96,23 +115,26 @@ module Fingerprint
 		def self.verify(master, copy, options = {}, &block)
 			error_count = 0 
 
-			errors = options.delete(:recordset) || Recordset.new
+			errors = options.delete(:recordset) || RecordSet.new
 			if options[:output]
-				errors = RecordsetPrinter.new(errors, options[:output])
+				errors = RecordSetPrinter.new(errors, options[:output])
 			end
 
 			checker = Checker.new(master, copy, options)
 
 			checker.check do |record, result, message|
 				error_count += 1
-				copy = checker.copy.paths[record.path]
 
 				metadata = {
 					'error.code' => result,
 					'error.message' => message
 				}
 
-				if copy
+				if result == :addition
+					metadata.merge!(record.metadata)
+					
+					errors << Record.new(:warning, record.path, metadata)
+				elsif (copy = checker.copy.paths[record.path])
 					changes = record.diff(copy)
 
 					changes.each do |name|
@@ -126,7 +148,13 @@ module Fingerprint
 				end
 			end
 
-			errors << Record.new(:summary, nil, {
+			if error_count
+				summary_message = "#{error_count} error(s) detected."
+			else
+				summary_message = "No errors detected"
+			end
+
+			errors << Record.new(:summary, summary_message, {
 				'error.count' => error_count
 			})
 

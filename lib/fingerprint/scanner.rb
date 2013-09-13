@@ -46,7 +46,9 @@ module Fingerprint
 			@options = options
 
 			@digests = {}
-			
+
+			@progress = nil
+
 			unless @options[:checksums] and @options[:checksums].size > 0
 				@options[:checksums] = DEFAULT_CHECKSUMS
 			end
@@ -75,6 +77,8 @@ module Fingerprint
 
 		# This code won't handle multiple threads..
 		def digests_for(path)
+			total = 0
+
 			@digests.each do |key, digest|
 				digest.reset
 			end
@@ -82,6 +86,10 @@ module Fingerprint
 			File.open(path, "rb") do |file|
 				buf = ""
 				while file.read(1024 * 1024 * 10, buf)
+					total += buf.size
+					
+					@progress.call(total) if @progress
+					
 					@digests.each do |key, digest|
 						digest << buf
 					end
@@ -104,6 +112,7 @@ module Fingerprint
 			if type == :file
 				metadata['file.size'] = stat.size
 				digests = digests_for(path)
+				metadata.merge!(digests)
 			end
 
 			# Extended information
@@ -129,7 +138,9 @@ module Fingerprint
 		# Output a file and associated metadata.
 		def file_record_for(path)
 			metadata = metadata_for(:file, path)
-			metadata.merge!(digests_for(path))
+			
+			# Should this be here or in metadata_for?
+			# metadata.merge!(digests_for(path))
 			
 			Record.new(:file, path, metadata)
 		end
@@ -183,6 +194,10 @@ module Fingerprint
 				@roots.each do |root|
 					Dir.chdir(root) do
 						Find.find("./") do |path|
+							if @options[:progress]
+								$stderr.puts "# Scanning: #{path}"
+							end
+							
 							if File.directory?(path)
 								if excluded?(path)
 									Find.prune # Ignore this directory
@@ -199,11 +214,21 @@ module Fingerprint
 				end
 			end
 			
+			if @options[:progress]
+				@progress = lambda do |read_size|
+					$stderr.puts "# Progress: File #{processed_count} / #{total_count}; Byte #{processed_size + read_size} / #{total_size} = #{sprintf('%0.3f%', (processed_size + read_size).to_f / total_size.to_f * 100.0)} (#{read_size}, #{processed_size}, #{total_size})"
+				end
+			end
+			
 			@roots.each do |root|
 				Dir.chdir(root) do
 					recordset << header_for(root)
 					
 					Find.find("./") do |path|
+						if @options[:progress]
+							$stderr.puts "# Path: #{path}"
+						end
+						
 						if File.directory?(path)
 							if excluded?(path)
 								excluded_count += 1
@@ -221,10 +246,10 @@ module Fingerprint
 						else
 							# Skip anything that isn't a valid file (e.g. pipes, sockets, symlinks).
 							if valid_file?(path)
+								recordset << file_record_for(path)
+
 								processed_count += 1
 								processed_size += File.size(path)
-
-								recordset << file_record_for(path)
 							else
 								excluded_count += 1
 								
@@ -235,15 +260,15 @@ module Fingerprint
 						end
 						
 						# Print out a progress summary if requested
-						if @options[:progress]
-							$stderr.puts "# Progress: File #{processed_count} / #{total_count} = #{sprintf('%0.2f%', processed_count.to_f / total_count.to_f * 100.0)}; Byte #{processed_size} / #{total_size} = #{sprintf('%0.2f%', processed_size.to_f / total_size.to_f * 100.0)}"
-						end
+						@progress.call(0) if @progress
 					end
 				end
 			end
+			
+			summary_message = "#{processed_count} files processed."
 
 			# Output summary
-			recordset << Record.new(:summary, nil, {
+			recordset << Record.new(:summary, summary_message, {
 				'summary.directories' => directory_count,
 				'summary.files' => processed_count,
 				'summary.size' => processed_size,
@@ -257,7 +282,13 @@ module Fingerprint
 		# A helper function to scan a set of directories.
 		def self.scan_paths(paths, options = {})
 			if options[:output]
-				options[:recordset] = RecordsetPrinter.new(Recordset.new, options[:output])
+				if options.key? :recordset
+					recordset = options[:recordset]
+				else
+					recordset = RecordSet.new
+				end
+				
+				options[:recordset] = RecordSetPrinter.new(recordset, options[:output])
 			end
 
 			scanner = Scanner.new(paths, options)

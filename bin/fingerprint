@@ -23,6 +23,7 @@
 require 'optparse'
 require 'pathname'
 require 'fingerprint'
+require 'fileutils'
 
 OPTIONS = {
 	:root => "./",
@@ -33,6 +34,8 @@ OPTIONS = {
 	:name => "index.fingerprint",
 	:extended => false,
 	:checksums => Fingerprint::DEFAULT_CHECKSUMS,
+	:additions => false,
+	:failures_exit_status => 0,
 }
 
 ARGV.options do |o|
@@ -63,11 +66,28 @@ ARGV.options do |o|
 	end
 	
 	o.separator ""
-	o.separator "Low level operations:"
+	
+	o.on("-x", "Include additional extended information about files and directories.") do
+		OPTIONS[:extended] = true
+	end
+	
+	o.on("-s [checksum1,checksum2]", "Provide a list of the checksum algorithms to use.", "Available: #{Fingerprint::CHECKSUMS.keys.join(', ')}; Default: #{OPTIONS[:checksums].join(', ')}") do |checksums|
+		OPTIONS[:checksums] = checksums.split(/[\s,]+/)
+	end
+	
+	o.separator ""
+	o.separator "Compare fingerprints:"
 
 	o.on("-c", "Compare the given fingerprints. Check that the second fingerprint is a superset of the first.") do
 		 OPTIONS[:mode] = :check
 	end
+	
+	o.on("-A", "Report files that have been added to the second fingerprint.") do
+		OPTIONS[:additions] = true
+	end
+	
+	o.separator ""
+	o.separator "Output manipulation:"
 	
 	o.on("-o [output-path]", String, "Write the fingerprint output to the given file.") do |path|
 		OPTIONS[:output] = File.open(path, "w")
@@ -80,15 +100,9 @@ ARGV.options do |o|
 	o.on("--progress", "Print percentage progress to standard error.") do
 		OPTIONS[:progress] = true
 	end
-
-	o.separator ""
 	
-	o.on("-x", "Include additional extended information about files and directories.") do
-		OPTIONS[:extended] = true
-	end
-	
-	o.on("-s [checksum1,checksum2]", "Provide a list of the checksum algorithms to use.", "Available: #{Fingerprint::CHECKSUMS.keys.join(', ')}; Default: #{OPTIONS[:checksums].join(', ')}") do |checksums|
-		OPTIONS[:checksums] = checksums.split(/[\s,]+/)
+	o.on("-X", "Give a non-zero exit code if errors are detected by check or verify.") do
+		OPTIONS[:failures_exit_status] = 1
 	end
 	
 	o.separator ""
@@ -116,77 +130,91 @@ if OPTIONS[:checksums].size == 0
 	OPTIONS[:checksums] = ['MD5', 'SHA2.256']
 end
 
+def finish_check(error_count)
+	if error_count == 0
+		$stderr.puts "Data verified, 0 errors found."
+		exit(0)
+	else
+		$stderr.puts "Data inconsistent, #{error_count} errors found!"
+		exit(OPTIONS[:failures_exit_status])
+	end
+end
+
 case (OPTIONS[:mode])
-	when :analyze
-		output_file = Pathname.new(OPTIONS[:root]) + OPTIONS[:name]
-		
-		if output_file.exist? && !OPTIONS[:force]
-			$stderr.puts "Output file #{output_file} already exists. Aborting."
-			exit(2)
-		end
-		
-		options = OPTIONS.dup
-		options[:excludes] = [OPTIONS[:name]]
-		
+when :analyze
+	output_file = Pathname.new(OPTIONS[:root]) + OPTIONS[:name]
+
+	if output_file.exist? && !OPTIONS[:force]
+		$stderr.puts "Output file #{output_file} already exists. Aborting."
+		exit(2)
+	end
+
+	options = OPTIONS.dup
+	options[:excludes] = [OPTIONS[:name]]
+
+	finished = false
+	begin
 		File.open(output_file, "w") do |io|
 			options[:output] = io
-			
+
 			Fingerprint::Scanner.scan_paths([OPTIONS[:root]], options)
 		end
-	when :verify
-		error_count = 0
-		
-		input_file = Pathname.new(OPTIONS[:root]) + OPTIONS[:name]
-		
-		unless File.exist? input_file
-			$stderr.puts "Can't find index #{input_file}. Aborting."
-			exit(3)
-		end
-		
-		options = OPTIONS.dup
-		
-		master = Fingerprint::Recordset.new
-		
-		File.open(input_file, "r") do |io|
-			master.parse(io)
-		end
-		
-		if master.configuration
-			options.merge!(master.configuration.options)
-		end
+		finished = true
+	ensure
+		FileUtils.rm(output_file) unless finished
+	end		
+when :verify
+	error_count = 0
 
-		scanner = Fingerprint::Scanner.new([OPTIONS[:root]], options)
-		copy = Fingerprint::SparseRecordset.new(scanner)
+	input_file = Pathname.new(OPTIONS[:root]) + OPTIONS[:name]
 
-		error_count += Fingerprint::Checker::verify(master, copy, options)
-		
-		if error_count == 0
-			$stderr.puts "Data verified, 0 errors found."
-			exit(0)
+	unless File.exist? input_file
+		$stderr.puts "Can't find index #{input_file}. Aborting."
+		exit(3)
+	end
+
+	options = OPTIONS.dup
+
+	master = Fingerprint::RecordSet.new
+
+	File.open(input_file, "r") do |io|
+		master.parse(io)
+	end
+
+	if master.configuration
+		options.merge!(master.configuration.options)
+	end
+
+	scanner = Fingerprint::Scanner.new([OPTIONS[:root]], options)
+	copy = Fingerprint::SparseRecordSet.new(scanner)
+
+	error_count += Fingerprint::Checker::verify(master, copy, options)
+
+	finish_check(error_count)
+when :scan
+	roots = ARGV
+	roots << Dir.pwd if roots.size == 0
+
+	# Check that all supplied paths exist
+	roots.delete_if do |root|
+		if File.exist? root
+			false
 		else
-			$stderr.puts "Data inconsistent, #{error_count} errors found!"
-			exit(1)
+			$stderr.puts "Path #{root} doesn't exist, skipping!"
+			true
 		end
-	when :scan
-		roots = ARGV
-		roots << Dir.pwd if roots.size == 0
-		
-		# Check that all supplied paths exist
-		roots.delete_if do |root|
-			if File.exist? root
-				false
-			else
-				$stderr.puts "Path #{root} doesn't exist, skipping!"
-				true
-			end
-		end
+	end
 
-		options = OPTIONS.dup
+	options = OPTIONS.dup
 
-		Fingerprint::Scanner.scan_paths(roots, options)
-	when :check
-		options = OPTIONS.dup
-		
-		error_count = Fingerprint::Checker.check_files(ARGV[0], ARGV[1], options)
-		exit(error_count > 0 ? 1 : 0)
+	# Discard output once it has been written to disk:
+	options[:recordset] = nil
+
+	Fingerprint::Scanner.scan_paths(roots, options)
+when :check
+	options = OPTIONS.dup
+
+	error_count = Fingerprint::Checker.check_files(ARGV[0], ARGV[1], options)
+
+	finish_check(error_count)
 end

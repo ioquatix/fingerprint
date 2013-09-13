@@ -1,9 +1,4 @@
-Fingerprint
-===========
-
-* Author: Samuel G. D. Williams (<http://www.oriontransfer.co.nz>)
-* Copyright (C) 2010, 2011 Samuel G. D. Williams.
-* Released under the MIT license.
+# Fingerprint
 
 Fingerprint is primarily a command line tool to compare directory structures on 
 disk. It also provides a programmatic interface for this procedure.
@@ -14,10 +9,27 @@ used to check the integrity of a remote backup.
 
 For examples and documentation please see the main [project page][1].
 
-[1]: http://www.oriontransfer.co.nz/gems/fingerprint
+[1]: http://www.codeotaku.com/projects/fingerprint/index
 
-Todo
-----
+## Installation
+
+Add this line to your application's Gemfile:
+
+    gem 'fingerprint'
+
+And then execute:
+
+    $ bundle
+
+Or install it yourself as:
+
+    $ gem install fingerprint
+
+## Usage
+
+Please refer to the [online documentation][http://www.codeotaku.com/projects/fingerprint/documentation/introduction].
+
+## Todo
 
 * Command line option to show files that have been created (e.g. don't exist in master fingerprint).
 * Command line option to show files that have changed but have the same modified time (hardware corrutpion).
@@ -28,10 +40,19 @@ Todo
 * Support general filenames for `--archive`, e.g. along with `-n`, maybe support a file called `index.fingerprint` by default: improved visibility for end user.
 * Because fingerprint is currently IO bound in terms of performance, single-threaded checksumming is fine, but for SSD and other fast storage, it might be possible to improve speed somewhat by using a map-reduce style approach.
 
-License
--------
+## Contributing
 
-Copyright (c) 2010, 2011 Samuel G. D. Williams. <http://www.oriontransfer.co.nz>
+1. Fork it
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create new Pull Request
+
+## License
+
+Released under the MIT license.
+
+Copyright, 2012, by [Samuel G. D. Williams](http://www.codeotaku.com/samuel-williams).
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
