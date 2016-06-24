@@ -1,11 +1,8 @@
 # Fingerprint
 
-Fingerprint is primarily a command line tool to compare directory structures on 
-disk. It also provides a programmatic interface for this procedure.
+Fingerprint is primarily a command line tool to compare directory structures on disk. It also provides a programmatic interface for this procedure.
 
-Because Fingerprint produces output to `IO` like structures, it is easy to transmit
-this data across a network, or store it for later use. As an example, it could be
-used to check the integrity of a remote backup.
+Because Fingerprint produces output to `IO` like structures, it is easy to transmit this data across a network, or store it for later use. As an example, it could be used to check the integrity of a remote backup.
 
 For examples and documentation please see the main [project page][1].
 
@@ -15,19 +12,27 @@ For examples and documentation please see the main [project page][1].
 
 Add this line to your application's Gemfile:
 
-    gem 'fingerprint'
+	gem 'fingerprint'
 
 And then execute:
 
-    $ bundle
+	$ bundle
 
 Or install it yourself as:
 
-    $ gem install fingerprint
+	$ gem install fingerprint
 
 ## Usage
 
-Please refer to the [online documentation](http://www.codeotaku.com/projects/fingerprint/documentation/introduction).
+The simplest usage of Fingerprint is checking if two directories are equivalent:
+
+	Fingerprint.identical?(source_path, destination_path) do |record|
+		puts "#{record.path} is different"
+	end
+
+This would catch additions, removals, and changes. You can use this in RSpec:
+
+	expect(Fingerprint).to be_identical(source_path, destination_path)
 
 ## Todo
 
@@ -52,7 +57,7 @@ Please refer to the [online documentation](http://www.codeotaku.com/projects/fin
 
 Released under the MIT license.
 
-Copyright, 2012, by [Samuel G. D. Williams](http://www.codeotaku.com/samuel-williams).
+Copyright, 2016, by [Samuel G. D. Williams](http://www.codeotaku.com/samuel-williams).
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

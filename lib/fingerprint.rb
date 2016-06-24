@@ -40,4 +40,17 @@ module Fingerprint
 		
 		return checker
 	end
+	
+	# Returns true if the given paths contain identical files. Useful for expectations, e.g. `expect(Fingerprint).to be_identical(source, destination)`
+	def self.identical?(source, destination, &block)
+		failures = 0
+		
+		check_paths(source, destination) do |record, name, message|
+			failures += 1
+			
+			yield(record) if block_given?
+		end
+		
+		return failures == 0
+	end
 end

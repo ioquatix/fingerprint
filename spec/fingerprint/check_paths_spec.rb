@@ -1,6 +1,6 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env rspec
 
-# Copyright (c) 2007, 2011 Samuel G. D. Williams. <http://www.oriontransfer.co.nz>
+# Copyright, 2016, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,42 +20,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'rubygems'
-
-require 'test/unit'
-require 'fileutils'
-require 'pathname'
 require 'fingerprint'
 
-require 'timeout'
-
-class TestFingerprint < Test::Unit::TestCase
-	def test_analyze_verify
-		File.open("junk.txt", "w") { |fp| fp.write("foobar") }
-		
-		result = system("fingerprint --analyze ./ -f")
-		
-		File.open("junk.txt", "w") { |fp| fp.write("foobar") }
-		
-		result = system("fingerprint --verify ./")
-		
-		assert_equal true, result
-		
-		File.open("junk.txt", "w") { |fp| fp.write("foobaz") }
-		
-		result = system("fingerprint -X --verify ./")
-		
-		assert_equal false, result
+describe Fingerprint do
+	it "should check the same path and not report any differences" do
+		expect(Fingerprint).to be_identical(__dir__, __dir__)
 	end
-
-	def test_check_paths
-		errors = 0
-		test_path = File.dirname(__FILE__)
-		
-		Fingerprint::check_paths(test_path, test_path) do |record, result, message|
-			errors += 1
-		end
-		
-		assert_equal errors, 0
+	
+	it "should check different paths and report differences" do
+		expect(Fingerprint).to_not be_identical(__dir__, File.expand_path("../", __dir__))
 	end
 end
