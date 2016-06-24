@@ -26,8 +26,8 @@ require 'samovar'
 
 module Fingerprint
 	module Command
-		class Diff < Samovar::Command
-			self.description = "Efficiently compute the difference of two fingerprints."
+		class Duplicates < Samovar::Command
+			self.description = "Efficiently find duplicates in a given fingerprint."
 			
 			def invoke(parent)
 			end

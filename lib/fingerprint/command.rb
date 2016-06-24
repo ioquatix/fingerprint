@@ -30,7 +30,7 @@ require_relative 'command/scan'
 require_relative 'command/analyze'
 require_relative 'command/verify'
 require_relative 'command/check'
-require_relative 'command/diff'
+require_relative 'command/duplicates'
 
 module Fingerprint
 	module Command
@@ -56,7 +56,7 @@ module Fingerprint
 				'analyze' => Analyze,
 				'verify' => Verify,
 				'check' => Check,
-				'diff' => Diff
+				'duplicates' => Duplicates
 			
 			def invoke(program_name: File.basename($0))
 				if @options[:version]
