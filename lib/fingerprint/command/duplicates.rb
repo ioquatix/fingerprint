@@ -29,7 +29,64 @@ module Fingerprint
 		class Duplicates < Samovar::Command
 			self.description = "Efficiently find duplicates in a given fingerprint."
 			
+			options do
+				option "--inverse/-i", "Invert the output, i.e. show files which are not duplicates."
+				option "--verbose", "Verbose output, e.g. what is happening."
+				option "-x/--extended", "Include extended information about files and directories."
+			end
+			
+			one :master, "The source fingerprint which represents the primarily file list."
+			many :copies, "Zero or more fingerprints which might contain duplicates."
+			
 			def invoke(parent)
+				duplicates_recordset = RecordSet.new
+				results = RecordSetPrinter.new(duplicates_recordset, @options[:output])
+				
+				master_file_path = @master
+				File.open(master_file_path) do |master_file|
+					master_recordset = RecordSet.new
+					master_recordset.parse(master_file)
+					
+					ignore_similar = false
+					
+					copy_file_paths = @copies
+					if copy_file_paths.size == 0
+						copy_file_paths = [master_file_path]
+						ignore_similar = true
+					end
+					
+					copy_file_paths.each do |copy_file_path|
+						File.open(copy_file_path) do |copy_file|
+							copy_recordset = RecordSet.new
+							copy_recordset.parse(copy_file)
+							
+							copy_recordset.records.each do |record|
+								record.metadata['fingerprint'] = copy_file_path
+								# We need to see if the record exists in the master
+								
+								if @options[:verbose]
+									$stderr.puts "Checking #{record.inspect}"
+								end
+								
+								main_record = master_recordset.find_by_key(record)
+								
+								# If we are scanning the same index, don't print out every file, just those that are duplicates within the single file.
+								if ignore_similar && main_record && (main_record.path == record.path)
+									main_record = nil
+								end
+								
+								if main_record
+									record.metadata['original.path'] = main_record.path
+									record.metadata['original.fingerprint'] = master_file_path
+									results << record if !@options[:inverse]
+								else
+									results << record if @options[:inverse]
+								end
+							end
+						end
+					end
+				end
+			else
 			end
 		end
 	end

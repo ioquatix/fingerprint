@@ -35,6 +35,8 @@ module Fingerprint
 			options do
 				option "-p/--path <path>", "Analyze the given path relative to root.", default: "./"
 				
+				option "--verbose", "Verbose fingerprint output, e.g. excluded paths."
+				
 				option "-x/--extended", "Include extended information about files and directories."
 				option "-s/--checksums <MD5,SHA1>", "Specify what checksum algorithms to use (#{Fingerprint::CHECKSUMS.keys.join(', ')}).", default: Fingerprint::DEFAULT_CHECKSUMS
 			end

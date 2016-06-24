@@ -27,9 +27,10 @@ require 'samovar'
 module Fingerprint
 	module Command
 		class Check < Samovar::Command
-			self.description = "Check two fingerprints for differences."
+			self.description = "Check two fingerprints for additions, removals and changes."
 			
 			options do
+				option "--additions/-a", "Report files that have been added to the second fingerprint."
 				option "--fail-on-errors", "Exit with non-zero status if errors are encountered."
 			end
 			
@@ -37,8 +38,10 @@ module Fingerprint
 			one :copy,  "The fingerprint which represents a copy of the data."
 			
 			def invoke(parent)
-				options = OPTIONS.dup
-
+				options = @options.dup
+				
+				options[:output] = $stdout
+				
 				error_count = Fingerprint::Checker.check_files(@master, @copy, options)
 
 				if @options[:fail_on_errors]

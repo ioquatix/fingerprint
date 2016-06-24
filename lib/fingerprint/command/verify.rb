@@ -40,16 +40,9 @@ module Fingerprint
 				option "-x/--extended", "Include extended information about files and directories."
 				option "-s/--checksums <MD5,SHA1>", "Specify what checksum algorithms to use (#{Fingerprint::CHECKSUMS.keys.join(', ')}).", default: Fingerprint::DEFAULT_CHECKSUMS
 				
+				option "--verbose", "Verbose fingerprint output, e.g. excluded paths."
+				
 				option "--fail-on-errors", "Exit with non-zero status if errors are encountered."
-			end
-			
-			def finish_check(error_count)
-				if error_count == 0
-					$stderr.puts "Data verified, 0 errors found."
-				else
-					$stderr.puts "Data inconsistent, #{error_count} errors found!"
-					exit(1) if @options[:exit_on_errors]
-				end
 			end
 			
 			def invoke(parent)
