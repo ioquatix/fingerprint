@@ -24,49 +24,25 @@
 
 require 'samovar'
 
-require_relative 'scanner'
-
-require_relative 'command/scan'
-require_relative 'command/analyze'
-require_relative 'command/verify'
-require_relative 'command/check'
-require_relative 'command/diff'
-
 module Fingerprint
 	module Command
-		class Top < Samovar::Command
-			self.description = "A file checksum analysis and verification tool."
+		class Check < Samovar::Command
+			self.description = "Check two fingerprints for differences."
 			
 			options do
-				option '--root <path>', "Work in the given root directory."
-				option '-h/--help', "Print out help information."
-				option '-v/--version', "Print out the application version."
+				option "--fail-on-errors", "Exit with non-zero status if errors are encountered."
 			end
 			
-			def chdir(&block)
-				if root = @options[:root]
-					Dir.chdir(root, &block)
-				else
-					yield
-				end
-			end
+			one :master, "The fingerprint which represents the original data."
+			one :copy,  "The fingerprint which represents a copy of the data."
 			
-			nested '<command>',
-				'scan' => Scan,
-				'analyze' => Analyze,
-				'verify' => Verify,
-				'check' => Check,
-				'diff' => Diff
-			
-			def invoke(program_name: File.basename($0))
-				if @options[:version]
-					puts "lsync v#{LSync::VERSION}"
-				elsif @options[:help] or @command.nil?
-					print_usage(program_name)
-				else
-					chdir do
-						@command.invoke(self)
-					end
+			def invoke(parent)
+				options = OPTIONS.dup
+
+				error_count = Fingerprint::Checker.check_files(@master, @copy, options)
+
+				if @options[:fail_on_errors]
+					abort if error_count != 0
 				end
 			end
 		end
