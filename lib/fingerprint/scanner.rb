@@ -171,10 +171,8 @@ module Fingerprint
 
 		def scan_path(path)
 			@roots.each do |root|
-				Dir.chdir(root) do
-					if valid_file?(path)
-						return file_record_for(path)
-					end
+				if valid_file?(path)
+					return file_record_for(path)
 				end
 			end
 			
@@ -194,22 +192,20 @@ module Fingerprint
 			# Estimate the number of files and amount of data to process..
 			if @options[:progress]
 				@roots.each do |root|
-					Dir.chdir(root) do
-						Find.find("./") do |path|
-							if @options[:progress]
-								$stderr.puts "# Scanning: #{path}"
+					Find.find(root) do |path|
+						if @options[:progress]
+							$stderr.puts "# Scanning: #{path}"
+						end
+						
+						if File.directory?(path)
+							if excluded?(path)
+								Find.prune # Ignore this directory
 							end
-							
-							if File.directory?(path)
-								if excluded?(path)
-									Find.prune # Ignore this directory
-								end
-							else
-								# Skip anything that isn't a valid file (e.g. pipes, sockets, symlinks).
-								if valid_file?(path)
-									total_count += 1
-									total_size += File.size(path)
-								end
+						else
+							# Skip anything that isn't a valid file (e.g. pipes, sockets, symlinks).
+							if valid_file?(path)
+								total_count += 1
+								total_size += File.size(path)
 							end
 						end
 					end
@@ -223,47 +219,45 @@ module Fingerprint
 			end
 			
 			@roots.each do |root|
-				Dir.chdir(root) do
-					recordset << header_for(root)
-					
-					Find.find("./") do |path|
-						if @options[:progress]
-							$stderr.puts "# Path: #{path}"
-						end
-						
-						if File.directory?(path)
-							if excluded?(path)
-								excluded_count += 1
-								
-								if @options[:verbose]
-									recordset << excluded_record_for(path)
-								end
-								
-								Find.prune # Ignore this directory
-							else
-								directory_count += 1
-								
-								recordset << directory_record_for(path)
-							end
-						else
-							# Skip anything that isn't a valid file (e.g. pipes, sockets, symlinks).
-							if valid_file?(path)
-								recordset << file_record_for(path)
-
-								processed_count += 1
-								processed_size += File.size(path)
-							else
-								excluded_count += 1
-								
-								if @options[:verbose]
-									recordset << excluded_record_for(path)
-								end
-							end
-						end
-						
-						# Print out a progress summary if requested
-						@progress.call(0) if @progress
+				recordset << header_for(root)
+				
+				Find.find(root) do |path|
+					if @options[:progress]
+						$stderr.puts "# Path: #{path}"
 					end
+					
+					if File.directory?(path)
+						if excluded?(path)
+							excluded_count += 1
+							
+							if @options[:verbose]
+								recordset << excluded_record_for(path)
+							end
+							
+							Find.prune # Ignore this directory
+						else
+							directory_count += 1
+							
+							recordset << directory_record_for(path)
+						end
+					else
+						# Skip anything that isn't a valid file (e.g. pipes, sockets, symlinks).
+						if valid_file?(path)
+							recordset << file_record_for(path)
+
+							processed_count += 1
+							processed_size += File.size(path)
+						else
+							excluded_count += 1
+							
+							if @options[:verbose]
+								recordset << excluded_record_for(path)
+							end
+						end
+					end
+					
+					# Print out a progress summary if requested
+					@progress.call(0) if @progress
 				end
 			end
 			

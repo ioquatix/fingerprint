@@ -37,7 +37,6 @@ module Fingerprint
 				
 				option "-f/--force", "Force all operations to complete despite warnings."
 				option "-x/--extended", "Include extended information about files and directories."
-				option "-a/--additions", "Report new files that have been added."
 				
 				option "-s/--checksums <MD5,SHA1>", "Specify what checksum algorithms to use (#{Fingerprint::CHECKSUMS.keys.join(', ')}).", default: Fingerprint::DEFAULT_CHECKSUMS
 				
@@ -72,6 +71,8 @@ module Fingerprint
 				end
 
 				scanner = Scanner.new(@paths, options)
+				
+				# We use a sparse record set here, so we can't check for additions.
 				copy = SparseRecordSet.new(scanner)
 
 				error_count = Checker.verify(master, copy, options)
