@@ -30,9 +30,10 @@ module Fingerprint
 			self.description = "Efficiently find duplicates in a given fingerprint."
 			
 			options do
-				option "--inverse/-i", "Invert the output, i.e. show files which are not duplicates."
-				option "--verbose", "Verbose output, e.g. what is happening."
+				option "-i/--inverse", "Invert the output, i.e. show files which are not duplicates."
 				option "-x/--extended", "Include extended information about files and directories."
+				
+				option "--verbose", "Verbose output, e.g. what is happening."
 			end
 			
 			one :master, "The source fingerprint which represents the primarily file list."
@@ -86,7 +87,6 @@ module Fingerprint
 						end
 					end
 				end
-			else
 			end
 		end
 	end

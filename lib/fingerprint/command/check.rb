@@ -30,8 +30,13 @@ module Fingerprint
 			self.description = "Check two fingerprints for additions, removals and changes."
 			
 			options do
-				option "--additions/-a", "Report files that have been added to the second fingerprint."
+				option "-o/--output <path>", "Output path for error transcript."
+				
+				option "-x/--extended", "Include extended information about files and directories."
+				option "-a/--additions", "Report files that have been added to the copy."
 				option "--fail-on-errors", "Exit with non-zero status if errors are encountered."
+				
+				option "--progress", "Print structured progress to standard error."
 			end
 			
 			one :master, "The fingerprint which represents the original data."
@@ -40,12 +45,16 @@ module Fingerprint
 			def invoke(parent)
 				options = @options.dup
 				
-				options[:output] = $stdout
+				if output_path = options[:output]
+					options[:output] = File.open(output_path, "w")
+				else
+					options[:output] = $stdout
+				end
 				
-				error_count = Fingerprint::Checker.check_files(@master, @copy, options)
+				error_count = Checker.check_files(@master, @copy, options)
 
 				if @options[:fail_on_errors]
-					abort if error_count != 0
+					abort "Data inconsistent, #{error_count} error(s) found!" if error_count != 0
 				end
 			end
 		end

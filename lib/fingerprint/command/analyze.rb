@@ -33,21 +33,22 @@ module Fingerprint
 		class Analyze < Samovar::Command
 			self.description = "Scan the filesystem and generate a fingerprint."
 			
-			POSSIBLE_CHECKSUMS = CHECKSUMS.keys.join(', ')
-			
 			options do
 				option "-n/--name <name>", "The fingerprint file name.", default: "index.fingerprint"
-				option "-p/--path <path>", "Analyze the given path relative to root.", default: "./"
 				
 				option "-f/--force", "Force all operations to complete despite warnings."
 				option "-x/--extended", "Include extended information about files and directories."
-				option "-s/--checksums <MD5,SHA1>", "Specify what checksum algorithms to use: #{POSSIBLE_CHECKSUMS}.", default: DEFAULT_CHECKSUMS
+				option "-s/--checksums <MD5,SHA1>", "Specify what checksum algorithms to use: #{CHECKSUMS.keys.join(', ')}.", default: DEFAULT_CHECKSUMS
 				
 				option "--progress", "Print structured progress to standard error."
 				option "--verbose", "Verbose fingerprint output, e.g. excluded paths."
 			end
 			
+			many :paths, "Paths relative to the root to use for verification, or pwd if not specified."
+			
 			def invoke(parent)
+				@paths = ["./"] if @paths.empty?
+				
 				output_file = @options[:name]
 
 				if File.exist?(output_file) and !@options[:force]
@@ -62,7 +63,7 @@ module Fingerprint
 					File.open(output_file, "w") do |io|
 						options[:output] = io
 
-						Scanner.scan_paths([@options[:path]], options)
+						Scanner.scan_paths(@paths, options)
 					end
 					finished = true
 				ensure

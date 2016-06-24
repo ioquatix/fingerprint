@@ -34,19 +34,23 @@ module Fingerprint
 			
 			options do
 				option "-n/--name <name>", "The fingerprint file name.", default: "index.fingerprint"
-				option "-p/--path <path>", "Analyze the given path relative to root.", default: "./"
 				
 				option "-f/--force", "Force all operations to complete despite warnings."
 				option "-x/--extended", "Include extended information about files and directories."
+				option "-a/--additions", "Report new files that have been added."
+				
 				option "-s/--checksums <MD5,SHA1>", "Specify what checksum algorithms to use (#{Fingerprint::CHECKSUMS.keys.join(', ')}).", default: Fingerprint::DEFAULT_CHECKSUMS
 				
+				option "--progress", "Print structured progress to standard error."
 				option "--verbose", "Verbose fingerprint output, e.g. excluded paths."
 				
 				option "--fail-on-errors", "Exit with non-zero status if errors are encountered."
 			end
 			
+			many :paths, "Paths relative to the root to use for verification, or ./ if not specified."
+			
 			def invoke(parent)
-				error_count = 0
+				@paths = ["./"] if @paths.empty?
 
 				input_file = @options[:name]
 
@@ -57,7 +61,7 @@ module Fingerprint
 				options = @options.dup
 				options[:output] = $stdout
 
-				master = Fingerprint::RecordSet.new
+				master = RecordSet.new
 
 				File.open(input_file, "r") do |io|
 					master.parse(io)
@@ -67,13 +71,13 @@ module Fingerprint
 					options.merge!(master.configuration.options)
 				end
 
-				scanner = Fingerprint::Scanner.new([@options[:path]], options)
-				copy = Fingerprint::SparseRecordSet.new(scanner)
+				scanner = Scanner.new(@paths, options)
+				copy = SparseRecordSet.new(scanner)
 
-				error_count += Fingerprint::Checker::verify(master, copy, options)
+				error_count = Checker.verify(master, copy, options)
 				
 				if @options[:fail_on_errors]
-					abort if error_count != 0
+					abort "Data inconsistent, #{error_count} error(s) found!" if error_count != 0
 				end
 			end
 		end

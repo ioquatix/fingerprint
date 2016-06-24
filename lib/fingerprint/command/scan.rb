@@ -35,10 +35,11 @@ module Fingerprint
 			options do
 				option "-p/--path <path>", "Analyze the given path relative to root.", default: "./"
 				
-				option "--verbose", "Verbose fingerprint output, e.g. excluded paths."
-				
 				option "-x/--extended", "Include extended information about files and directories."
-				option "-s/--checksums <MD5,SHA1>", "Specify what checksum algorithms to use (#{Fingerprint::CHECKSUMS.keys.join(', ')}).", default: Fingerprint::DEFAULT_CHECKSUMS
+				option "-s/--checksums <MD5,SHA1>", "Specify what checksum algorithms to use: #{CHECKSUMS.keys.join(', ')}.", default: DEFAULT_CHECKSUMS
+				
+				option "--progress", "Print structured progress to standard error."
+				option "--verbose", "Verbose fingerprint output, e.g. excluded paths."
 			end
 			
 			many :paths, "Paths to scan."
@@ -52,7 +53,7 @@ module Fingerprint
 				options[:output] = $stdout
 				options[:recordset] = nil
 				
-				Fingerprint::Scanner.scan_paths(@paths, options)
+				Scanner.scan_paths(@paths, options)
 			end
 		end
 	end
