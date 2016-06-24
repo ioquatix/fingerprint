@@ -40,11 +40,57 @@ This would catch additions, removals, and changes. You can use this in RSpec:
 
 ### Command Line
 
-The `fingerprint` command can be used to analyze a given directory. In the future you can verify it is still the same set of files.
+The `fingerprint` command has a high-level and low-level interface.
 
-	fingerpint --analyze ./
+#### High-level Interface
 
-This will generate a file `./index.fingerprint` which contains all the details required to verify that path in the future.
+This usage is centered around analysing a given directory using `fingerprint analyze` and then, at a later date, checking that the directory is not missing any files and that all files are the same as they were originally, using `fingerprint verify`.
+
+	% fingerprint analyze
+	% fingerprint verify
+	S 0 error(s) detected.
+		error.count 0
+
+If we modify a file, it will be reported:
+
+	% fingerprint verify 
+	W ./README.md
+		changes.file.size.new 4157
+		changes.file.size.old 4048
+		changes.key.MD5.new 167cceb2136426b9dabab2df0d0f855d
+		changes.key.MD5.old 0445e524835596184e47d091085fa7b9
+		changes.key.SHA2.256.new 7c955edef21625cc6817d0df8c549fac236b062ce7f5077743708c56394bd87a
+		changes.key.SHA2.256.old 72d151c34e0565c6b645188e34608ff08b40d560e667f7a0bf9392d72586cef4
+		error.code keys_different
+		error.message Key MD5 does not match
+	S 1 error(s) detected.
+		error.count 1
+
+This command does not report files which have been added.
+
+#### Low-level interface
+
+It is possible to generate a fingerprint using the scan command, which takes a list of paths and writes out the transcript.
+
+	% fingerprint scan spec 
+	C /home/samuel/Documents/Programming/ioquatix/fingerprint/spec
+		fingerprint.version 2.0.0
+		options.checksums MD5, SHA2.256
+		options.extended false
+		summary.time.start 2016-06-25 11:46:12 +1200
+	D ./
+	D ./fingerprint
+	F ./fingerprint/check_paths_spec.rb
+		file.size 1487
+		key.MD5 ef77034977daa683bbaaed47c553f6f5
+		key.SHA2.256 970ec4663ffc257ec1d4f49f54711c38434108d580afc0c92ea7bf864e08a1e0
+	S 1 files processed.
+		summary.directories 2
+		summary.excluded 0
+		summary.files 1
+		summary.size 1487
+		summary.time.end 2016-06-25 11:46:12 +1200
+
 
 ## Todo
 
