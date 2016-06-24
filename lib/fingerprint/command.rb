@@ -1,5 +1,3 @@
-#!/usr/bin/env ruby
-
 # Copyright, 2016, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,7 +22,51 @@
 # It then ensures that there is a symlink called "latest" that points 
 # to the renamed directory.
 
-require 'fingerprint/command'
+require 'samovar'
 
-application = Fingerprint::Command::Top.new(ARGV)
-application.invoke
+require_relative 'scanner'
+
+require_relative 'command/scan'
+require_relative 'command/analyze'
+require_relative 'command/verify'
+require_relative 'command/diff'
+
+module Fingerprint
+	module Command
+		class Top < Samovar::Command
+			self.description = "A file checksum analysis and verification tool."
+			
+			options do
+				option '--root <path>', "Work in the given root directory."
+				option '-h/--help', "Print out help information."
+				option '-v/--version', "Print out the application version."
+			end
+			
+			def chdir(&block)
+				if root = @options[:root]
+					Dir.chdir(root, &block)
+				else
+					yield
+				end
+			end
+			
+			nested '<command>',
+				'scan' => Scan,
+				'analyze' => Analyze,
+				'verify' => Verify,
+				'diff' => Diff
+			
+			def invoke(program_name: File.basename($0))
+				if @options[:version]
+					puts "lsync v#{LSync::VERSION}"
+				elsif @options[:help] or @command.nil?
+					print_usage(program_name)
+				else
+					chdir do
+						@command.invoke(self)
+					end
+				end
+			end
+		end
+	end
+end

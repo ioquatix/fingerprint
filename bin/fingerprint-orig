@@ -1,0 +1,220 @@
+#!/usr/bin/env ruby
+
+# Copyright (c) 2011 Samuel G. D. Williams. <http://www.oriontransfer.co.nz>
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+require 'optparse'
+require 'pathname'
+require 'fingerprint'
+require 'fileutils'
+
+OPTIONS = {
+	:root => "./",
+	:mode => :scan,
+	:output => $stdout,
+	:verbose => false,
+	:force => false,
+	:name => "index.fingerprint",
+	:extended => false,
+	:checksums => Fingerprint::DEFAULT_CHECKSUMS,
+	:additions => false,
+	:failures => :ignore,
+}
+
+ARGV.options do |o|
+	script_name = File.basename($0)
+
+	o.banner = "Usage: #{script_name} [options] [path]"
+	o.define_head "This script is used to create and compare file system fingerprints."
+
+	o.separator ""
+	o.separator "Directory analysis and verification:"
+	
+	o.on("-a", "--analyze [path]", String, "Generage a fingerprint of the given path and save it for later verification.") do |path|
+		OPTIONS[:mode] = :analyze
+		OPTIONS[:root] = path if path
+	end
+	
+	o.on("-v", "--verify [path]", String, "Verify a given path based on a previously saved fingerprint.") do |path|
+		OPTIONS[:mode] = :verify
+		OPTIONS[:root] = path if path
+	end
+	
+	o.on("-n name", String, "Specify the name of the fingerprint file.", "Default: #{OPTIONS[:name]}") do |name|
+		OPTIONS[:name] = name
+	end
+	
+	o.on("-f", "Force any operation to complete despite warnings.") do
+		OPTIONS[:force] = true
+	end
+	
+	o.separator ""
+	
+	o.on("-x", "Include additional extended information about files and directories.") do
+		OPTIONS[:extended] = true
+	end
+	
+	o.on("-s [checksum1,checksum2]", "Provide a list of the checksum algorithms to use.", "Available: #{Fingerprint::CHECKSUMS.keys.join(', ')}; Default: #{OPTIONS[:checksums].join(', ')}") do |checksums|
+		OPTIONS[:checksums] = checksums.split(/[\s,]+/)
+	end
+	
+	o.separator ""
+	o.separator "Compare fingerprints:"
+
+	o.on("-c", "Compare the given fingerprints. Check that the second fingerprint is a superset of the first.") do
+		 OPTIONS[:mode] = :check
+	end
+	
+	o.on("-A", "Report files that have been added to the second fingerprint.") do
+		OPTIONS[:additions] = true
+	end
+	
+	o.separator ""
+	o.separator "Output manipulation:"
+	
+	o.on("-o [output-path]", String, "Write the fingerprint output to the given file.") do |path|
+		OPTIONS[:output] = File.open(path, "w")
+	end
+	
+	o.on("--verbose", "Verbose output, include additional details in the file transcript.") do
+		OPTIONS[:verbose] = true
+	end
+	
+	o.on("--progress", "Print percentage progress to standard error.") do
+		OPTIONS[:progress] = true
+	end
+	
+	o.on("--die", "Give a non-zero exit code if errors are detected by check or verify.") do
+		OPTIONS[:failures] = :die
+	end
+	
+	o.separator ""
+	o.separator "Help and Copyright information:"
+
+	o.on_tail("--copy", "Display copyright and warranty information") do
+		$stderr.puts "#{script_name} v#{Fingerprint::VERSION}. Copyright (c) 2011 Samuel Williams."
+		$stderr.puts "This software is released under the MIT license and comes with ABSOLUTELY NO WARRANTY."
+		$stderr.puts "See http://www.oriontransfer.co.nz/ for more information."
+		exit
+	end
+
+	o.on_tail("-h", "--help", "Show this help message.") do
+		$stderr.puts o
+		exit
+	end
+end.parse!
+
+unless File.directory? OPTIONS[:root]
+	$stderr.puts "Path #{OPTIONS[:root]} doesn't exist!"
+	exit(255)
+end
+
+if OPTIONS[:checksums].size == 0
+	OPTIONS[:checksums] = ['MD5', 'SHA2.256']
+end
+
+def finish_check(error_count)
+	if error_count == 0
+		$stderr.puts "Data verified, 0 errors found."
+		exit(0)
+	else
+		$stderr.puts "Data inconsistent, #{error_count} errors found!"
+		exit(OPTIONS[:failures] == :die ? 1 : 0)
+	end
+end
+
+case (OPTIONS[:mode])
+when :analyze
+	output_file = Pathname.new(OPTIONS[:root]) + OPTIONS[:name]
+
+	if output_file.exist? && !OPTIONS[:force]
+		$stderr.puts "Output file #{output_file} already exists. Aborting."
+		exit(2)
+	end
+
+	options = OPTIONS.dup
+	options[:excludes] = [OPTIONS[:name]]
+
+	finished = false
+	begin
+		File.open(output_file, "w") do |io|
+			options[:output] = io
+
+			Fingerprint::Scanner.scan_paths([OPTIONS[:root]], options)
+		end
+		finished = true
+	ensure
+		FileUtils.rm(output_file) unless finished
+	end		
+when :verify
+	error_count = 0
+
+	input_file = Pathname.new(OPTIONS[:root]) + OPTIONS[:name]
+
+	unless File.exist? input_file
+		$stderr.puts "Can't find index #{input_file}. Aborting."
+		exit(3)
+	end
+
+	options = OPTIONS.dup
+
+	master = Fingerprint::RecordSet.new
+
+	File.open(input_file, "r") do |io|
+		master.parse(io)
+	end
+
+	if master.configuration
+		options.merge!(master.configuration.options)
+	end
+
+	scanner = Fingerprint::Scanner.new([OPTIONS[:root]], options)
+	copy = Fingerprint::SparseRecordSet.new(scanner)
+
+	error_count += Fingerprint::Checker::verify(master, copy, options)
+
+	finish_check(error_count)
+when :scan
+	roots = ARGV
+	roots << Dir.pwd if roots.size == 0
+
+	# Check that all supplied paths exist
+	roots.delete_if do |root|
+		if File.exist? root
+			false
+		else
+			$stderr.puts "Path #{root} doesn't exist, skipping!"
+			true
+		end
+	end
+
+	options = OPTIONS.dup
+
+	# Discard output once it has been written to disk:
+	options[:recordset] = nil
+
+	Fingerprint::Scanner.scan_paths(roots, options)
+when :check
+	options = OPTIONS.dup
+
+	error_count = Fingerprint::Checker.check_files(ARGV[0], ARGV[1], options)
+
+	finish_check(error_count)
+end

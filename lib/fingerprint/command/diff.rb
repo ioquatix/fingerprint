@@ -1,5 +1,3 @@
-#!/usr/bin/env ruby
-
 # Copyright, 2016, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,7 +22,15 @@
 # It then ensures that there is a symlink called "latest" that points 
 # to the renamed directory.
 
-require 'fingerprint/command'
+require 'samovar'
 
-application = Fingerprint::Command::Top.new(ARGV)
-application.invoke
+module Fingerprint
+	module Command
+		class Diff < Samovar::Command
+			self.description = "Efficiently compute the difference of two fingerprints."
+			
+			def invoke(parent)
+			end
+		end
+	end
+end

@@ -1,5 +1,3 @@
-#!/usr/bin/env ruby
-
 # Copyright, 2016, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,7 +22,36 @@
 # It then ensures that there is a symlink called "latest" that points 
 # to the renamed directory.
 
-require 'fingerprint/command'
+require 'samovar'
 
-application = Fingerprint::Command::Top.new(ARGV)
-application.invoke
+require_relative '../scanner'
+require_relative '../record'
+
+module Fingerprint
+	module Command
+		class Scan < Samovar::Command
+			self.description = "Check an existing fingerprint against the filesystem."
+			
+			options do
+				option "-p/--path <path>", "Analyze the given path relative to root.", default: "./"
+				
+				option "-x/--extended", "Include extended information about files and directories."
+				option "-s/--checksums <MD5,SHA1>", "Specify what checksum algorithms to use (#{Fingerprint::CHECKSUMS.keys.join(', ')}).", default: Fingerprint::DEFAULT_CHECKSUMS
+			end
+			
+			many :paths, "Paths to scan."
+			
+			def invoke(parent)
+				@paths = [Dir.pwd] if @paths.empty?
+				
+				options = @options.dup
+				
+				# This configuration ensures that the output is printed to $stdout.
+				options[:output] = $stdout
+				options[:recordset] = nil
+				
+				Fingerprint::Scanner.scan_paths(@paths, options)
+			end
+		end
+	end
+end
