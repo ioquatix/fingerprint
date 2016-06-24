@@ -38,6 +38,14 @@ This would catch additions, removals, and changes. You can use this in RSpec:
 
 	expect(Fingerprint).to be_identical(source_path, destination_path)
 
+### Command Line
+
+The `fingerprint` command can be used to analyze a given directory. In the future you can verify it is still the same set of files.
+
+	fingerpint --analyze ./
+
+This will generate a file `./index.fingerprint` which contains all the details required to verify that path in the future.
+
 ## Todo
 
 * Command line option to show files that have been created (e.g. don't exist in master fingerprint).
