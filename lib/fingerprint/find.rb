@@ -19,6 +19,8 @@
 # THE SOFTWARE.
 
 require 'find'
+require 'build/files/path'
+require 'build/files/system'
 
 module Fingerprint
 	module Find
@@ -29,9 +31,7 @@ module Fingerprint
 			prefix_size = root.size
 			
 			::Find.find(root) do |path|
-				relative_path = path[prefix_size..-1]
-				puts "#{path.inspect} => #{relative_path.inspect}"
-				yield relative_path unless relative_path.empty?
+				yield Build::Files::Path.new(path, root)
 			end
 		end
 		

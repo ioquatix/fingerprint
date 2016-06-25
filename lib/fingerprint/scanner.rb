@@ -118,6 +118,10 @@ module Fingerprint
 				metadata.merge!(digests)
 			end
 
+			if type == :link
+				metadata['file.symlink'] = File.readlink(path)
+			end
+
 			# Extended information
 			if @options[:extended]
 				metadata['posix.time.modified'] = File.mtime(path)
@@ -135,7 +139,13 @@ module Fingerprint
 		
 		# Output a directory header.
 		def directory_record_for(path)
-			Record.new(:directory, path, metadata_for(:directory, path))
+			Record.new(:directory, path.relative_path, metadata_for(:directory, path))
+		end
+
+		def link_record_for(path)
+			metadata = metadata_for(:link, path)
+			
+			Record.new(:link, path.relative_path, metadata)
 		end
 
 		# Output a file and associated metadata.
@@ -145,12 +155,12 @@ module Fingerprint
 			# Should this be here or in metadata_for?
 			# metadata.merge!(digests_for(path))
 			
-			Record.new(:file, path, metadata)
+			Record.new(:file, path.relative_path, metadata)
 		end
 
 		# Add information about excluded paths.
 		def excluded_record_for(path)
-			Record.new(:excluded, path)
+			Record.new(:excluded, path.relative_path)
 		end
 
 		public
@@ -166,22 +176,21 @@ module Fingerprint
 			return false
 		end
 
-		def valid_file?(path)
-			!(excluded?(path) || File.symlink?(path) || !File.file?(path) || !File.readable?(path))
-		end
-
 		def scan_path(path)
+			return nil if excluded?(path)
+			
 			@roots.each do |root|
-				# Dir.chdir(root) do
-				if valid_file?(path)
-					return file_record_for(path)
+				full_path = Build::Files::Path.join(root, path)
+				
+				if full_path.symlink?
+					return link_record_for(full_path)
+				elsif full_path.file?
+					return file_record_for(full_path)
 				end
 			end
 			
 			return nil
 		end
-
-
 
 		# Run the scanning process.
 		def scan(recordset)
@@ -201,16 +210,13 @@ module Fingerprint
 							$stderr.puts "# Scanning: #{path}"
 						end
 						
-						if File.directory?(path)
-							if excluded?(path)
-								Find.prune # Ignore this directory
-							end
-						else
-							# Skip anything that isn't a valid file (e.g. pipes, sockets, symlinks).
-							if valid_file?(path)
-								total_count += 1
-								total_size += File.size(path)
-							end
+						if excluded?(path.relative_path)
+							Find.prune if path.directory?
+						elsif path.symlink?
+							total_count += 1
+						elsif path.file?
+							total_count += 1
+							total_size += File.size(path)
 						end
 					end
 				end
@@ -230,33 +236,32 @@ module Fingerprint
 						$stderr.puts "# Path: #{path}"
 					end
 					
-					if File.directory?(path)
-						if excluded?(path)
-							excluded_count += 1
-							
-							if @options[:verbose]
-								recordset << excluded_record_for(path)
-							end
-							
-							Find.prune # Ignore this directory
-						else
-							directory_count += 1
-							
-							recordset << directory_record_for(path)
+					if excluded?(path.relative_path)
+						excluded_count += 1
+						
+						if @options[:verbose]
+							recordset << excluded_record_for(path)
 						end
-					else
-						# Skip anything that isn't a valid file (e.g. pipes, sockets, symlinks).
-						if valid_file?(path)
-							recordset << file_record_for(path)
+						
+						Find.prune if path.directory?
+					elsif path.directory?
+						directory_count += 1
+						
+						recordset << directory_record_for(path)
+					elsif path.symlink?
+						recordset << link_record_for(path)
+						
+						processed_count += 1
+					elsif path.file?
+						recordset << file_record_for(path)
 
-							processed_count += 1
-							processed_size += File.size(path)
-						else
-							excluded_count += 1
-							
-							if @options[:verbose]
-								recordset << excluded_record_for(path)
-							end
+						processed_count += 1
+						processed_size += File.size(path)
+					else
+						excluded_count += 1
+						
+						if @options[:verbose]
+							recordset << excluded_record_for(path)
 						end
 					end
 					

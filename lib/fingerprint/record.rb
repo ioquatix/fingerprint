@@ -25,6 +25,7 @@ module Fingerprint
 	MODES = {
 		:configuration => 'C',
 		:file => 'F',
+		:link => 'L',
 		:directory => 'D',
 		:summary => 'S',
 		:warning => 'W',
