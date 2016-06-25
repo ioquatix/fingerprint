@@ -31,7 +31,7 @@ module Fingerprint
 	#
 	# Master and copy are +IO+ objects corresponding to the output produced by +Fingerprint::Scanner+.
 	class Checker
-		def initialize(master, copy, options = {})
+		def initialize(master, copy, **options)
 			@master = master
 			@copy = copy
 			
