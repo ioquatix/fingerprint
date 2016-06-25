@@ -28,8 +28,6 @@ module Fingerprint
 			# Ensure root is a directory:
 			root += File::SEPARATOR unless root.end_with?(File::SEPARATOR)
 			
-			prefix_size = root.size
-			
 			::Find.find(root) do |path|
 				yield Build::Files::Path.new(path, root)
 			end
