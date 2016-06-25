@@ -26,7 +26,8 @@ require 'digest/sha2'
 require_relative 'version'
 
 module Fingerprint
-
+	INDEX_FINGERPRINT = "index.fingerprint"
+	
 	CHECKSUMS = {
 		'MD5' => lambda { Digest::MD5.new },
 		'SHA1' => lambda { Digest::SHA1.new },

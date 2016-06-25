@@ -33,7 +33,7 @@ module Fingerprint
 			self.description = "Check an existing fingerprint against the filesystem."
 			
 			options do
-				option "-n/--name <name>", "The fingerprint file name.", default: "index.fingerprint"
+				option "-n/--name <name>", "The fingerprint file name.", default: INDEX_FINGERPRINT
 				
 				option "-f/--force", "Force all operations to complete despite warnings."
 				option "-x/--extended", "Include extended information about files and directories."
