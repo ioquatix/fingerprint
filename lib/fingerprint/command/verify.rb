@@ -48,6 +48,8 @@ module Fingerprint
 			
 			many :paths, "Paths relative to the root to use for verification, or ./ if not specified."
 			
+			attr :error_count
+			
 			def invoke(parent)
 				@paths = ["./"] if @paths.empty?
 
@@ -75,7 +77,7 @@ module Fingerprint
 				# We use a sparse record set here, so we can't check for additions.
 				copy = SparseRecordSet.new(scanner)
 
-				error_count = Checker.verify(master, copy, options)
+				@error_count = Checker.verify(master, copy, options)
 				
 				if @options[:fail_on_errors]
 					abort "Data inconsistent, #{error_count} error(s) found!" if error_count != 0
