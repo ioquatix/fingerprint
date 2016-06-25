@@ -1,8 +1,17 @@
 # Fingerprint
 
-Fingerprint is primarily a command line tool to compare directory structures on disk. It also provides a programmatic interface for this procedure.
+Fingerprint is a general purpose data integrity tool that uses cryptographic hashes to detect changes in files. Fingerprint scans a directory tree and generates a small transcript file containing the names and cryptographic hashes of the files in a tree. This snapshot file can then be used to generate a list of files that have been created, deleted, or modified. If so much as a single bit in a single file in the directory tree has changed, Fingerprint will detect it.
 
-Because Fingerprint produces output to `IO` like structures, it is easy to transmit this data across a network, or store it for later use. As an example, it could be used to check the integrity of a remote backup.
+Traditionally, the only way to preserve data was to take regular backups and hope that any unwanted changes that occurred would be major, obvious ones (such as loss of the disk). This approach meant trusting all the software to which the data was exposed: operating systems, backup software, communications software, compression software, encryption software, and archiving software. Unfortunately, each of these systems is highly complex and can inflict all kinds of damage on the data, much of the damage undetectable to humans who aren't actively using the data at the time. Fingerprint allows data to be monitored, detecting even the change of a single bit. If a change is detected, the corrupted data can be restored from backups. This approach provides far more assurance than the traditional approach.
+
+Fingerprint can be used for:
+
+- Preservation: Detect corruption of data.
+- Security: Detect changes made by intruders.
+- Sealing: Cryptographically seal critical files.
+- Transfers: Verify file transfers between different systems.
+- Notarizing: Prove that documents existed at a particular time.
+- Backups: Verify restored backups to ensure that backups are sound.
 
 For examples and documentation please see the main [project page][1].
 
