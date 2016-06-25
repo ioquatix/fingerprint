@@ -2,7 +2,7 @@
 
 Fingerprint is a general purpose data integrity tool that uses cryptographic hashes to detect changes in files. Fingerprint scans a directory tree and generates a small transcript file containing the names and cryptographic hashes of the files in a tree. This snapshot file can then be used to generate a list of files that have been created, deleted, or modified. If so much as a single bit in a single file in the directory tree has changed, Fingerprint will detect it.
 
-Traditionally, the only way to preserve data was to take regular backups and hope that any unwanted changes that occurred would be major, obvious ones (such as loss of the disk). This approach meant trusting all the software to which the data was exposed: operating systems, backup software, communications software, compression software, encryption software, and archiving software. Unfortunately, each of these systems is highly complex and can inflict all kinds of damage on the data, much of the damage undetectable to humans who aren't actively using the data at the time. Fingerprint allows data to be monitored, detecting even the change of a single bit. If a change is detected, the corrupted data can be restored from backups. This approach provides far more assurance than the traditional approach.
+Traditionally, the only way to preserve data was to take regular backups and hope that any unwanted changes that occurred would be major, obvious ones (such as loss of the disk). This approach means trusting all the software to which the data was exposed: operating systems, backup software, communications software, compression software, encryption software, and archiving software. Unfortunately, each of these systems is highly complex and can inflict all kinds of damage on data, much of the damage undetectable to humans who aren't actively using the data at the time. Fingerprint allows data to be monitored, detecting even the change of a single bit. If a change is detected, the corrupted data can be restored from backups. This approach provides far more assurance than the traditional approach.
 
 Fingerprint can be used for:
 
@@ -20,6 +20,16 @@ For examples and documentation please see the main [project page][1].
 [![Build Status](https://secure.travis-ci.org/ioquatix/fingerprint.svg)](http://travis-ci.org/ioquatix/fingerprint)
 [![Code Climate](https://codeclimate.com/github/ioquatix/fingerprint.svg)](https://codeclimate.com/github/ioquatix/fingerprint)
 [![Coverage Status](https://coveralls.io/repos/ioquatix/fingerprint/badge.svg)](https://coveralls.io/r/ioquatix/fingerprint)
+
+## Motivation
+
+When I first suffered data-loss, it wasn't catastrophic - it was the slow deterioration of a drive which silently corrupted many files. After this event, I wanted a tool which would allow me to minimize the chance of this happening in the future.
+
+When I take a backup now, I also take a fingerprint. If I ever need to restore from backup, I can be confident the data is as it was when it was backed up.
+
+In addition, I found fingerprint useful for ensuring the integrity of large file copies between servers and other data migration tasks. It's trivial to take a fingerprint along with a directory full of data, and then verify it in the future if required.
+
+These days, filesystems are adopting block-level checksums which minimises the chance of silent data corruption, but due to cross-system differences, fingerprint is still useful, e.g. when backing up a Mac system to Linux.
 
 ## Installation
 
