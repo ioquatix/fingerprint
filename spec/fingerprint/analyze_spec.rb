@@ -29,7 +29,7 @@ describe Fingerprint do
 	end
 	
 	it "should analyze and verify files" do
-		Fingerprint::Command::Top.new(["analyze"]).invoke
+		Fingerprint::Command::Top.new(["analyze", "-f"]).invoke
 		
 		expect(File).to be_exist(Fingerprint::INDEX_FINGERPRINT)
 		
