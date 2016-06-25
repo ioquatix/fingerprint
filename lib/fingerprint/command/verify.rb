@@ -60,7 +60,7 @@ module Fingerprint
 				end
 
 				options = @options.dup
-				options[:output] = $stdout
+				options[:output] = parent.output
 
 				master = RecordSet.new
 

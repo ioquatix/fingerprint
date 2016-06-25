@@ -30,8 +30,6 @@ module Fingerprint
 			self.description = "Check two fingerprints for additions, removals and changes."
 			
 			options do
-				option "-o/--output <path>", "Output path for error transcript."
-				
 				option "-x/--extended", "Include extended information about files and directories."
 				option "-a/--additions", "Report files that have been added to the copy."
 				option "--fail-on-errors", "Exit with non-zero status if errors are encountered."
@@ -44,12 +42,7 @@ module Fingerprint
 			
 			def invoke(parent)
 				options = @options.dup
-				
-				if output_path = options[:output]
-					options[:output] = File.open(output_path, "w")
-				else
-					options[:output] = $stdout
-				end
+				options[:output] = parent.output
 				
 				error_count = Checker.check_files(@master, @copy, options)
 

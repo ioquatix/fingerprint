@@ -50,7 +50,7 @@ module Fingerprint
 				options = @options.dup
 				
 				# This configuration ensures that the output is printed to $stdout.
-				options[:output] = $stdout
+				options[:output] = parent.output
 				options[:recordset] = nil
 				
 				Scanner.scan_paths(@paths, options)

@@ -40,7 +40,7 @@ module Fingerprint
 			many :copies, "Zero or more fingerprints which might contain duplicates."
 			
 			def invoke(parent)
-				@options[:output] = $stdout
+				@options[:output] = parent.output
 				
 				duplicates_recordset = RecordSet.new
 				results = RecordSetPrinter.new(duplicates_recordset, @options[:output])

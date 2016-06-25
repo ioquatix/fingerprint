@@ -39,6 +39,9 @@ module Fingerprint
 			
 			options do
 				option '--root <path>', "Work in the given root directory."
+				
+				option '-o/--output <path>', "Output the transcript to a specific file rather than stdout."
+				
 				option '-h/--help', "Print out help information."
 				option '-v/--version', "Print out the application version."
 			end
@@ -48,6 +51,14 @@ module Fingerprint
 					Dir.chdir(root, &block)
 				else
 					yield
+				end
+			end
+			
+			def output
+				if path = @options[:output]
+					File.open(path, "w")
+				else
+					$stdout
 				end
 			end
 			
