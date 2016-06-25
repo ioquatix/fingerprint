@@ -19,10 +19,10 @@
 # THE SOFTWARE.
 
 require 'stringio'
-require 'find'
 require 'etc'
 require 'digest/sha2'
 
+require_relative 'find'
 require_relative 'version'
 
 module Fingerprint
@@ -172,6 +172,7 @@ module Fingerprint
 
 		def scan_path(path)
 			@roots.each do |root|
+				# Dir.chdir(root) do
 				if valid_file?(path)
 					return file_record_for(path)
 				end
@@ -179,6 +180,8 @@ module Fingerprint
 			
 			return nil
 		end
+
+
 
 		# Run the scanning process.
 		def scan(recordset)

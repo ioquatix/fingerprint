@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Samuel G. D. Williams. <http://www.oriontransfer.co.nz>
+# Copyright, 2016, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,39 +18,25 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'fingerprint/record'
-require 'fingerprint/version'
-require 'fingerprint/scanner'
-require 'fingerprint/checker'
+require 'find'
 
 module Fingerprint
-	# A helper function to check two paths for consistency. Provides callback from +Fingerprint::Checker+.
-	def self.check_paths(master_path, copy_path, **options, &block)
-		master = Scanner.new([master_path])
-		copy = Scanner.new([copy_path])
-		
-		master_recordset = RecordSet.new
-		copy_recordset = SparseRecordSet.new(copy)
-		
-		master.scan(master_recordset)
-		
-		checker = Checker.new(master_recordset, copy_recordset, **options)
-		
-		checker.check(&block)
-		
-		return checker
-	end
-	
-	# Returns true if the given paths contain identical files. Useful for expectations, e.g. `expect(Fingerprint).to be_identical(source, destination)`
-	def self.identical?(source, destination, &block)
-		failures = 0
-		
-		check_paths(source, destination) do |record, name, message|
-			failures += 1
+	module Find
+		def self.find(root)
+			# Ensure root is a directory:
+			root += File::SEPARATOR unless root.end_with?(File::SEPARATOR)
 			
-			yield(record) if block_given?
+			prefix_size = root.size
+			
+			::Find.find(root) do |path|
+				relative_path = path[prefix_size..-1]
+				puts "#{path.inspect} => #{relative_path.inspect}"
+				yield relative_path unless relative_path.empty?
+			end
 		end
 		
-		return failures == 0
+		def self.prune
+			::Find.prune
+		end
 	end
 end
