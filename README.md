@@ -91,6 +91,18 @@ It is possible to generate a fingerprint using the scan command, which takes a l
 		summary.size 1487
 		summary.time.end 2016-06-25 11:46:12 +1200
 
+#### Duplicates
+
+Fingerprint can efficiently find duplicates in one or more fingeprints.
+
+	$ fingerprint duplicates index.fingerprint
+	F ./.git/refs/heads/master
+		file.size 41
+		fingerprint index.fingerprint
+		key.MD5 aaadaeee72126dedcd4044d687a74068
+		key.SHA2.256 6750f057b38c2ea93e3725545333b8167301b6d8daa0626b0a2a613a6a4f4f04
+		original.fingerprint index.fingerprint
+		original.path ./.git/refs/remotes/origin/master
 
 ## Todo
 
