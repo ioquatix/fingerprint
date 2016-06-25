@@ -95,7 +95,7 @@ module Fingerprint
 		# A list of files which either did not exist in the copy, or had the wrong checksum.
 		attr :failures
 
-		def self.check_files(master, copy, options = {}, &block)
+		def self.check_files(master, copy, **options, &block)
 			# New API that takes two RecordSets...
 			
 			File.open(master) do |master_file|
@@ -106,13 +106,13 @@ module Fingerprint
 					copy_recordset = RecordSet.new
 					copy_recordset.parse(copy_file)
 
-					verify(master_recordset, copy_recordset, options, &block)
+					verify(master_recordset, copy_recordset, **options, &block)
 				end
 			end
 		end
 
 		# Helper function to check two fingerprint files.
-		def self.verify(master, copy, options = {}, &block)
+		def self.verify(master, copy, **options, &block)
 			error_count = 0 
 
 			errors = options.delete(:recordset) || RecordSet.new
@@ -120,7 +120,7 @@ module Fingerprint
 				errors = RecordSetPrinter.new(errors, options[:output])
 			end
 
-			checker = Checker.new(master, copy, options)
+			checker = Checker.new(master, copy, **options)
 
 			checker.check do |record, result, message|
 				error_count += 1
