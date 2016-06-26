@@ -13,7 +13,7 @@ Fingerprint can be used for:
 - Notarizing: Prove that documents existed at a particular time.
 - Backups: Verify restored backups to ensure that backups are sound.
 
-For examples and documentation please see the main [project page][1].
+For examples and documentation please see the main [project page][1]. A companion app is available in the [Mac App Store](https://itunes.apple.com/nz/app/fingerprint/id470866821)
 
 [1]: http://www.codeotaku.com/projects/fingerprint/index
 
