@@ -109,31 +109,32 @@ module Fingerprint
 		end
 
 		def metadata_for(type, path)
-			stat = File.stat(path)
 			metadata = {}
-
-			if type == :file
-				metadata['file.size'] = stat.size
-				digests = digests_for(path)
-				metadata.merge!(digests)
-			end
-
+			
 			if type == :link
 				metadata['file.symlink'] = File.readlink(path)
+			else
+				stat = File.stat(path)
+
+				if type == :file
+					metadata['file.size'] = stat.size
+					digests = digests_for(path)
+					metadata.merge!(digests)
+				end
+
+				# Extended information
+				if @options[:extended]
+					metadata['posix.time.modified'] = File.mtime(path)
+
+					metadata['posix.mode'] = stat.mode.to_s(8)
+
+					metadata['posix.permissions.user.id'] = stat.uid
+					metadata['posix.permissions.user.name'] = Etc.getpwuid(stat.uid).name
+					metadata['posix.permissions.group.id'] = stat.gid
+					metadata['posix.permissions.group.name'] = Etc.getgrgid(stat.gid).name
+				end
 			end
-
-			# Extended information
-			if @options[:extended]
-				metadata['posix.time.modified'] = File.mtime(path)
-
-				metadata['posix.mode'] = stat.mode.to_s(8)
-
-				metadata['posix.permissions.user.id'] = stat.uid
-				metadata['posix.permissions.user.name'] = Etc.getpwuid(stat.uid).name
-				metadata['posix.permissions.group.id'] = stat.gid
-				metadata['posix.permissions.group.name'] = Etc.getgrgid(stat.gid).name
-			end
-
+			
 			return metadata
 		end
 		
