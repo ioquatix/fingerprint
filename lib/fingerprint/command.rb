@@ -71,7 +71,7 @@ module Fingerprint
 			
 			def invoke(program_name: File.basename($0))
 				if @options[:version]
-					puts "lsync v#{LSync::VERSION}"
+					puts "fingerprint v#{Fingerprint::VERSION}"
 				elsif @options[:help] or @command.nil?
 					print_usage(program_name)
 				else
