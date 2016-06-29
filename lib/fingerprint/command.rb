@@ -71,7 +71,7 @@ module Fingerprint
 			
 			def invoke(program_name: File.basename($0))
 				if @options[:version]
-					puts "fingerprint v#{Fingerprint::VERSION}"
+					puts "fingerprint v#{VERSION}"
 				elsif @options[:help] or @command.nil?
 					print_usage(program_name)
 				else
