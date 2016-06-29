@@ -29,7 +29,7 @@ require_relative 'scanner'
 require_relative 'command/scan'
 require_relative 'command/analyze'
 require_relative 'command/verify'
-require_relative 'command/check'
+require_relative 'command/compare'
 require_relative 'command/duplicates'
 
 module Fingerprint
@@ -66,7 +66,7 @@ module Fingerprint
 				'scan' => Scan,
 				'analyze' => Analyze,
 				'verify' => Verify,
-				'check' => Check,
+				'compare' => Compare,
 				'duplicates' => Duplicates
 			
 			def invoke(program_name: File.basename($0))
