@@ -85,6 +85,16 @@ module Fingerprint
 	end
 	
 	class RecordSet
+		def self.load_file(path)
+			File.open(path, "r") do |io|
+				self.load(io)
+			end
+		end
+		
+		def self.load(io)
+			self.new.tap{|record_set| record_set.parse(io)}
+		end
+		
 		def initialize
 			@records = []
 			@paths = {}
@@ -114,6 +124,10 @@ module Fingerprint
 					@keys[key][record[key]] = record
 				end
 			end
+		end
+
+		def include?(path)
+			@paths.include?(path)
 		end
 
 		def lookup(path)

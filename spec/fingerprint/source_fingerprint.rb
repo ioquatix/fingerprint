@@ -20,37 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'fingerprint/command'
-require 'fileutils'
-
-require_relative 'source_fingerprint'
-
-describe Fingerprint do
+shared_context "source fingerprint" do
+	let(:source_directory) {File.expand_path("../../lib", __dir__)}
+	let(:fingerprint_name) {File.join(__dir__, "test.fingerprint")}
+	
 	after(:each) do
-		Fingerprint::INDEX_FINGERPRINT
-	end
-	
-	it "should analyze and verify files" do
-		Fingerprint::Command::Top.new(["analyze", "-f"]).invoke
-		
-		expect(File).to be_exist(Fingerprint::INDEX_FINGERPRINT)
-		
-		top = Fingerprint::Command::Top.new(["verify"]).tap(&:invoke)
-		
-		expect(top.command.error_count).to be == 0
-	end
-end
-
-describe Fingerprint do
-	include_context "source fingerprint"
-	
-	it "should analyze a different path" do
-		Fingerprint::Command::Top.new(["analyze", "-n", fingerprint_name, "-f", source_directory]).invoke
-		
-		expect(File).to be_exist(fingerprint_name)
-		
-		top = Fingerprint::Command::Top.new(["verify", "-n", fingerprint_name, "-f", source_directory]).tap(&:invoke)
-		
-		expect(top.command.error_count).to be == 0
+		FileUtils.rm_rf(fingerprint_name)
 	end
 end

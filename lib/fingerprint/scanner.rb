@@ -42,8 +42,8 @@ module Fingerprint
 		# Initialize the scanner to scan a given set of directories in order.
 		# [+options[:excludes]+]  An array of regular expressions of files to avoid indexing.
 		# [+options[:output]+]    An +IO+ where the results will be written.
-		def initialize(roots, options = {})
-			@roots = roots
+		def initialize(roots, pwd: Dir.pwd, **options)
+			@roots = roots.collect{|root| File.expand_path(root, pwd)}
 
 			@excludes = options[:excludes] || []
 			@options = options
@@ -237,7 +237,7 @@ module Fingerprint
 						$stderr.puts "# Path: #{path}"
 					end
 					
-					if excluded?(path.relative_path)
+					if excluded?(path)
 						excluded_count += 1
 						
 						if @options[:verbose]

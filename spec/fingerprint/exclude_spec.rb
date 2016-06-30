@@ -26,22 +26,6 @@ require 'fileutils'
 require_relative 'source_fingerprint'
 
 describe Fingerprint do
-	after(:each) do
-		Fingerprint::INDEX_FINGERPRINT
-	end
-	
-	it "should analyze and verify files" do
-		Fingerprint::Command::Top.new(["analyze", "-f"]).invoke
-		
-		expect(File).to be_exist(Fingerprint::INDEX_FINGERPRINT)
-		
-		top = Fingerprint::Command::Top.new(["verify"]).tap(&:invoke)
-		
-		expect(top.command.error_count).to be == 0
-	end
-end
-
-describe Fingerprint do
 	include_context "source fingerprint"
 	
 	it "should analyze a different path" do
@@ -49,8 +33,7 @@ describe Fingerprint do
 		
 		expect(File).to be_exist(fingerprint_name)
 		
-		top = Fingerprint::Command::Top.new(["verify", "-n", fingerprint_name, "-f", source_directory]).tap(&:invoke)
-		
-		expect(top.command.error_count).to be == 0
+		record_set = Fingerprint::RecordSet.load_file(fingerprint_name)
+		expect(record_set).to_not be_include(File.basename(fingerprint_name))
 	end
 end

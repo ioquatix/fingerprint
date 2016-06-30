@@ -57,7 +57,7 @@ module Fingerprint
 				end
 
 				options = @options.dup
-				options[:excludes] = [options[:name]]
+				options[:excludes] = [File.expand_path(options[:name], Dir.pwd)]
 
 				finished = false
 				begin
