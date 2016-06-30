@@ -31,7 +31,7 @@ require_relative '../record'
 module Fingerprint
 	module Command
 		class Scan < Samovar::Command
-			self.description = "Check an existing fingerprint against the filesystem."
+			self.description = "Generate a fingerprint from the given paths."
 			
 			options do
 				option "-p/--path <path>", "Analyze the given path relative to root.", default: "./"
