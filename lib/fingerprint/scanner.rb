@@ -234,7 +234,7 @@ module Fingerprint
 				
 				Find.find(root) do |path|
 					if @options[:progress]
-						$stderr.puts "# Path: #{path}"
+						$stderr.puts "# Path: #{path.relative_path}"
 					end
 					
 					if excluded?(path)
