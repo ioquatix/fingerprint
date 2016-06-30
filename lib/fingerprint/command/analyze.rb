@@ -32,7 +32,7 @@ require_relative '../record'
 module Fingerprint
 	module Command
 		class Analyze < Samovar::Command
-			self.description = "Scan the filesystem and generate a fingerprint."
+			self.description = "Scan the filesystem and generate a fingerprint ; perform basic fingerprinting"
 			
 			options do
 				option "-n/--name <name>", "The fingerprint file name.", default: INDEX_FINGERPRINT

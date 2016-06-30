@@ -30,7 +30,7 @@ require_relative '../record'
 module Fingerprint
 	module Command
 		class Verify < Samovar::Command
-			self.description = "Check an existing fingerprint against the filesystem."
+			self.description = "Check an existing fingerprint against the filesystem ; perform basic verification of the filesystem."
 			
 			options do
 				option "-n/--name <name>", "The fingerprint file name.", default: INDEX_FINGERPRINT
