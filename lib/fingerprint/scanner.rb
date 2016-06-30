@@ -211,7 +211,7 @@ module Fingerprint
 							$stderr.puts "# Scanning: #{path}"
 						end
 						
-						if excluded?(path.relative_path)
+						if excluded?(path)
 							Find.prune if path.directory?
 						elsif path.symlink?
 							total_count += 1

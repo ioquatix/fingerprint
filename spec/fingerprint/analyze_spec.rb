@@ -37,4 +37,17 @@ describe Fingerprint do
 		
 		expect(top.command.error_count).to be == 0
 	end
+	
+	let(:source_directory) {File.expand_path("../../lib", __dir__)}
+	let(:fingerprint_name) {File.join(__dir__, "test.fingerprint")}
+	
+	it "should analyze a different path" do
+		Fingerprint::Command::Top.new(["analyze", "-n", fingerprint_name, "-f", source_directory]).invoke
+		
+		expect(File).to be_exist(fingerprint_name)
+		
+		top = Fingerprint::Command::Top.new(["verify", "-n", fingerprint_name, "-f", source_directory]).tap(&:invoke)
+		
+		expect(top.command.error_count).to be == 0
+	end
 end
