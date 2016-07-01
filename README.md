@@ -77,7 +77,7 @@ This usage is centered around analysing a given directory using `fingerprint ana
 If we modify a file, it will be reported:
 
 	% fingerprint verify 
-	W ./README.md
+	W README.md
 		changes.file.size.new 4157
 		changes.file.size.old 4048
 		changes.key.MD5.new 167cceb2136426b9dabab2df0d0f855d
@@ -101,9 +101,9 @@ It is possible to generate a fingerprint using the scan command, which takes a l
 		options.checksums MD5, SHA2.256
 		options.extended false
 		summary.time.start 2016-06-25 11:46:12 +1200
-	D ./
-	D ./fingerprint
-	F ./fingerprint/check_paths_spec.rb
+	D 
+	D fingerprint
+	F fingerprint/check_paths_spec.rb
 		file.size 1487
 		key.MD5 ef77034977daa683bbaaed47c553f6f5
 		key.SHA2.256 970ec4663ffc257ec1d4f49f54711c38434108d580afc0c92ea7bf864e08a1e0
@@ -119,13 +119,13 @@ It is possible to generate a fingerprint using the scan command, which takes a l
 Fingerprint can efficiently find duplicates in one or more fingeprints.
 
 	$ fingerprint duplicates index.fingerprint
-	F ./.git/refs/heads/master
+	F .git/refs/heads/master
 		file.size 41
 		fingerprint index.fingerprint
 		key.MD5 aaadaeee72126dedcd4044d687a74068
 		key.SHA2.256 6750f057b38c2ea93e3725545333b8167301b6d8daa0626b0a2a613a6a4f4f04
 		original.fingerprint index.fingerprint
-		original.path ./.git/refs/remotes/origin/master
+		original.path .git/refs/remotes/origin/master
 
 ## Todo
 
