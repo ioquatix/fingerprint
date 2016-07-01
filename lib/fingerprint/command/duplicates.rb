@@ -39,10 +39,12 @@ module Fingerprint
 			one :master, "The source fingerprint which represents the primarily file list."
 			many :copies, "Zero or more fingerprints which might contain duplicates."
 			
+			attr :duplicates_recordset
+			
 			def invoke(parent)
 				@options[:output] = parent.output
 				
-				duplicates_recordset = RecordSet.new
+				@duplicates_recordset = RecordSet.new
 				results = RecordSetPrinter.new(duplicates_recordset, @options[:output])
 				
 				master_file_path = @master

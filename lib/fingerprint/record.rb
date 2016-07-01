@@ -129,6 +129,10 @@ module Fingerprint
 		def include?(path)
 			@paths.include?(path)
 		end
+		
+		def empty?
+			@paths.empty?
+		end
 
 		def lookup(path)
 			return @paths[path]
