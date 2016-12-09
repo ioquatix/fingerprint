@@ -48,6 +48,14 @@ RSpec.describe ['MD5'] do
 		}
 end
 
+RSpec.describe ['SHA1'] do
+  it_behaves_like "scanner checksum",
+    "corpus/README.md" => {
+      "file.size" => 52,
+      "key.SHA1" => "a36492a961d2672efc481059860af5c1dd9a2aed"
+    }
+end
+
 RSpec.describe ['SHA2.256', 'SHA2.384', 'SHA2.512'] do
 	it_behaves_like "scanner checksum",
 		"corpus/README.md" => {
