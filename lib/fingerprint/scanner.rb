@@ -23,6 +23,7 @@ require 'etc'
 require 'digest/sha2'
 
 require_relative 'find'
+require_relative 'record'
 require_relative 'version'
 
 module Fingerprint
