@@ -34,6 +34,12 @@ RSpec.shared_examples "scanner checksum" do |digests|
 	end
 end
 
+RSpec.describe "defaults" do
+  it "defaults to SHA2.256 only" do
+    expect(Fingerprint::DEFAULT_CHECKSUMS).to eq(['SHA2.256'])
+  end
+end
+
 RSpec.describe ['MD5'] do
 	it_behaves_like "scanner checksum",
 		"corpus/README.md" => {
