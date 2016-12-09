@@ -32,6 +32,7 @@ module Fingerprint
 		'MD5' => lambda { Digest::MD5.new },
 		'SHA1' => lambda { Digest::SHA1.new },
 		'SHA2.256' => lambda { Digest::SHA2.new(256) },
+		'SHA2.384' => lambda { Digest::SHA2.new(384) },
 		'SHA2.512' => lambda { Digest::SHA2.new(512) },
 	}
 
