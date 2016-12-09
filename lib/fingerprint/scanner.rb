@@ -37,7 +37,7 @@ module Fingerprint
 		'SHA2.512' => lambda { Digest::SHA2.new(512) },
 	}
 
-	DEFAULT_CHECKSUMS = ['MD5', 'SHA2.256']
+	DEFAULT_CHECKSUMS = ['SHA2.256']
 
 	# The scanner class can scan a set of directories and produce an index.
 	class Scanner
