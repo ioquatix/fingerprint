@@ -65,3 +65,11 @@ RSpec.describe ['SHA2.256', 'SHA2.384', 'SHA2.512'] do
 			"key.SHA2.512" => "73c9d10f92ca7a0d53641efe59860a7bd358185cfe5ba51fe7b19a6894344f3109de8840d3ae73742c5a059daffcbdda865111f1925604e3f6c59d33443bde2c",
 		}
 end
+
+RSpec.describe ['BLAKE2s'] do
+  it_behaves_like "scanner checksum",
+    "corpus/README.md" => {
+      "file.size" => 52,
+      "key.BLAKE2s" => "ee2dd5815bd9aa804813d6eb792bcb04f5beeb6214a73efad31459ec985c9a17"
+    }
+end

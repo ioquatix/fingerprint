@@ -21,6 +21,7 @@
 require 'stringio'
 require 'etc'
 require 'digest/sha2'
+require 'blake2'
 
 require_relative 'find'
 require_relative 'record'
@@ -35,6 +36,7 @@ module Fingerprint
 		'SHA2.256' => lambda { Digest::SHA2.new(256) },
 		'SHA2.384' => lambda { Digest::SHA2.new(384) },
 		'SHA2.512' => lambda { Digest::SHA2.new(512) },
+		'BLAKE2s' => lambda { 'blake2s' } # no-op
 	}
 
 	DEFAULT_CHECKSUMS = ['SHA2.256']
@@ -85,7 +87,7 @@ module Fingerprint
 			total = 0
 
 			@digests.each do |key, digest|
-				digest.reset
+				digest.reset unless key == 'BLAKE2s'
 			end
 
 			File.open(path, "rb") do |file|
@@ -96,7 +98,7 @@ module Fingerprint
 					@progress.call(total) if @progress
 					
 					@digests.each do |key, digest|
-						digest << buf
+						digest << buf unless key == 'BLAKE2s'
 					end
 				end
 			end
@@ -104,7 +106,13 @@ module Fingerprint
 			metadata = {}
 			
 			@digests.each do |key, digest|
-				metadata["key." + key] = digest.hexdigest
+				if key == 'BLAKE2s'
+					# Blake2 gem reads a whole file at a time
+					b2file = File.open(path, 'rb') { |f| f.read }
+					metadata["key." + key] = Blake2.hex(b2file)
+				else
+					metadata["key." + key] = digest.hexdigest
+				end
 			end
 			
 			return metadata
