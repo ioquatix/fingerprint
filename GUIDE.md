@@ -2,65 +2,50 @@
 
 This guide gives an overview of the various ways in which fingerprint can be used.
 
+## Fingerprint Digests
+
+The following are the options for which digests can be generated:
+
+* `MD5`
+* `SHA1`
+* `SHA2.256`
+* `SHA2.384`
+* `SHA2.512`
+* `BLAKE2s` 
+
+`SHA2.256` is the default.
+
+The use of `MD5` and `SHA1` are no longer recommended due to the
+risk of hash collisions.
+
 ## Generating fingerprints
 
 Fingerprint is designed to index directories. The basic verb `scan` will index all paths specified in order (or the current path if none is given).
 
-	$ fingerprint scan /bin
-	fingerprint scan /bin | head -n 100
-	C /bin
-		fingerprint.version 2.1.3
-		options.checksums MD5, SHA2.256
-		options.extended false
-		summary.time.start 2016-07-01 15:16:51 +1200
-	D 
-	F [
-		file.size 22464
-		key.MD5 576c4bb1e8cd269d3bdaf2b6dcd62cda
-		key.SHA2.256 8cd75d8ddbeee27938c5fb9dee380bbc40159be687ba18d99d5b10ef3b16a7cb
-	F bash
-		file.size 628496
-		key.MD5 5d7583d80e5314ac844eedc6d68c6cd7
-		key.SHA2.256 fe162e301556121782e1e5334a023e94f742a3a66434812620ae41a5da5f3360
-	F cat
-		file.size 23520
-		key.MD5 3fb0e3ca64776d182c422400a09673c3
-		key.SHA2.256 2b4e43b4fe74e662a8063b61ab85c65d3a5d6f431166c38abb1f9c2df06ac69c
-	F chmod
-		file.size 33904
-		key.MD5 ecb64579c6dd0ebee31bf8e4d4cdcc6e
-		key.SHA2.256 139432e4cfdd8761ab8ddd36f0121f8d34ef4b05e61d63d45e8703ef53a2b447
-	F cp
-		file.size 28832
-		key.MD5 a8ebcee2d17317beee2136ec59bfba4d
-		key.SHA2.256 c126b5445251cb5be295d6a9e238bb71df9e8450dee1e84c1ee46760052985ba
-	F csh
-		file.size 378624
-		key.MD5 0d3ea03a76f98011f35812a912068515
-		key.SHA2.256 c20dac3882d08111cafcc42b4e689b8d963650244f8b8e9e13ade7cd9300d538
-	F date
-		file.size 28368
-		key.MD5 52c4e2ef8d1e621901abaa75d875d743
-		key.SHA2.256 6a6cade84d420801e974aa493b127a1af1bb9482e9e9fc8a563fb626c1f5d3c7
-	F dd
-		file.size 31856
-		key.MD5 88cb8607654c414248b629441f74e865
-		key.SHA2.256 dc53fcea0dda988dc63225b06c7c5b3690aa3926947b8d3ee15362c008c9f5c4
-	F df
-		file.size 27440
-		key.MD5 f0857735cd9e35b183204528f2be2114
-		key.SHA2.256 f71696bc4933373a1b64f5510a98909752256f1c57122999cf5784c30f2f8216
-	-- snip --
-	F zsh
-		file.size 573600
-		key.MD5 52d52aa8579eaef58addc0757f9c97d9
-		key.SHA2.256 72508fe3cef985ca91b766727c4d9a6374f216a8b69a13ce41677f2e0400eacd
-	S 37 files processed.
-		summary.directories 1
-		summary.excluded 0
-		summary.files 37
-		summary.size 4983584
-		summary.time.end 2016-07-01 15:17:26 +1200
+``` text
+$ fingerprint scan /tmp/test
+C /tmp/test
+	fingerprint.version 2.1.5
+	options.checksums SHA2.256
+	options.extended false
+	summary.time.start 2016-12-09 16:42:41 -0800
+D
+F file-1.txt
+	file.size 0
+	key.SHA2.256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+F file-2.txt
+	file.size 0
+	key.SHA2.256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+F file-3.sh
+	file.size 0
+	key.SHA2.256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+S 3 files processed.
+	summary.directories 1
+	summary.excluded 0
+	summary.files 3
+	summary.size 0
+	summary.time.end 2016-12-09 16:42:41 -0800
+```
 
 ## Verifing Fingerprints
 
@@ -68,11 +53,11 @@ Files can be checked against a given fingerprint. In the case of `verify`, only 
 
 To generate a fingerprint for a given path:
 
-	fingerprint scan /bin > bin.fingerprint
+	fingerprint scan /tmp/test > /tmp/test.fingerprint
 
 This fingerprint can then be used to verify that no files have changed:
 
-	$ fingerprint verify -n bin.fingerprint /bin
+	$ fingerprint verify -n /tmp/test.fingerprint /tmp/test
 	S 0 error(s) detected.
 		error.count 0
 
@@ -80,31 +65,23 @@ This fingerprint can then be used to verify that no files have changed:
 
 The `verify` operation checks a given fingerprint against a current filesystem, and can work efficiently according to the files in the source fingerprint. In the case that you want to compare two fingerprints, you can find all differences, including additions. This can be useful when comparing two backups to see what files changed (e.g. a tripwire).
 
-	$ fingerprint scan /bin > bin1.fingerprint
-	$ pacman -Syu
-	-- snip --
-	$ fingerprint scan /bin > bin2.fingerprint
-	$ fingerprint compare -a bin1.fingerprint bin2.fingerprint
-	W blkdeactivate
-		changes.file.size.new 12503
-		changes.file.size.old 12515
-		changes.key.MD5.new 64f768d7d19fdc4e5197b1b43443f9f5
-		changes.key.MD5.old 360e5623e86148c7168ef7dd4146d833
-		changes.key.SHA2.256.new 8f7a4de6f1dea81b1c924603ff36b1d70b1f44580072d911f9c86cc8ccacd732
-		changes.key.SHA2.256.old 26b1e560e5f3a2c47860cffe2189228b7825260957af0424e5e20317fcf0d570
-		error.code keys_different
-		error.message Key MD5 does not match
-	-- snip --
-	W bsdcat
-		error.code addition
-		error.message File added
-		file.size 155256
-		key.MD5 062e16f4cd910f28f2879c41a16296f4
-		key.SHA2.256 53c74350abaae592571c8bb0e340a8754c22681292bab5d635e150d401d48ace
-	S 41 error(s) detected.
-		error.count 41
+```
+/tmp$ fingerprint scan /tmp/test > /tmp/test1.fingerprint
+/tmp$ vi test/file-1.txt  (change this file)
+/tmp$ fingerprint scan /tmp/test > /tmp/test2.fingerprint
+/tmp$ fingerprint compare /tmp/test1.fingerprint /tmp/test2.fingerprint
+W file-1.txt
+	changes.file.size.new 4
+	changes.file.size.old 0
+	changes.key.SHA2.256.new b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c
+	changes.key.SHA2.256.old e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+	error.code keys_different
+	error.message Key SHA2.256 does not match
+S 1 error(s) detected.
+	error.count 1
+```
 
-Here we can see files which have been changed and added to `/bin` after a system upgrade.
+Here we can see files which have been changed and added to `/tmp/test` after a modifying a file.
 
 ## Transmission and Archival Usage
 
@@ -254,4 +231,4 @@ Fingerprint can be used to produce printed documents which can be used to verify
 
 Simply follow the procedure to produce a cryptographic hash of a directory, print these documents out, and get them signed.
 
-N.B. Please consult a lawyer for the correct procedure and legal standing of such techniques. This document is not legal advise and we accepts no responsibility for any use or misuse of this tool.
+N.B. Please consult a lawyer for the correct procedure and legal standing of such techniques. This document is not legal advice and we accept no responsibility for any use or misuse of this tool.

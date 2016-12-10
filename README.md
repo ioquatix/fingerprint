@@ -69,25 +69,27 @@ The `fingerprint` command has a high-level and low-level interface.
 
 This usage is centered around analysing a given directory using `fingerprint analyze` and then, at a later date, checking that the directory is not missing any files and that all files are the same as they were originally, using `fingerprint verify`.
 
-	% fingerprint analyze
-	% fingerprint verify
-	S 0 error(s) detected.
-		error.count 0
+```
+$ fingerprint analyze
+$ fingerprint verify
+S 0 error(s) detected.
+	error.count 0
+```
 
-If we modify a file, it will be reported:
+If we modify a file (`file-1.txt` in this example), it will be reported:
 
-	% fingerprint verify 
-	W README.md
-		changes.file.size.new 4157
-		changes.file.size.old 4048
-		changes.key.MD5.new 167cceb2136426b9dabab2df0d0f855d
-		changes.key.MD5.old 0445e524835596184e47d091085fa7b9
-		changes.key.SHA2.256.new 7c955edef21625cc6817d0df8c549fac236b062ce7f5077743708c56394bd87a
-		changes.key.SHA2.256.old 72d151c34e0565c6b645188e34608ff08b40d560e667f7a0bf9392d72586cef4
-		error.code keys_different
-		error.message Key MD5 does not match
-	S 1 error(s) detected.
-		error.count 1
+```
+$ fingerprint verify
+W file-1.txt
+	changes.file.size.new 8
+	changes.file.size.old 4
+	changes.key.SHA2.256.new 1f2ec52b774368781bed1d1fb140a92e0eb6348090619c9291f9a5a3c8e8d151
+	changes.key.SHA2.256.old b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c
+	error.code keys_different
+	error.message Key SHA2.256 does not match
+S 1 error(s) detected.
+	error.count 1
+```
 
 This command does not report files which have been added.
 
