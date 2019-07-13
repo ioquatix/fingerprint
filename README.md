@@ -17,13 +17,13 @@ Fingerprint can be used for:
 
 A companion app is available in the [Mac App Store](https://itunes.apple.com/nz/app/fingerprint/id470866821). Purchasing this app helps fund the open source software development.
 
-[![Build Status](https://secure.travis-ci.org/ioquatix/fingerprint.svg)](http://travis-ci.org/ioquatix/fingerprint)
+[![Build Status](https://travis-ci.org/ioquatix/fingerprint.svg?branch=master)](https://travis-ci.org/ioquatix/fingerprint)
 [![Code Climate](https://codeclimate.com/github/ioquatix/fingerprint.svg)](https://codeclimate.com/github/ioquatix/fingerprint)
 [![Coverage Status](https://coveralls.io/repos/ioquatix/fingerprint/badge.svg)](https://coveralls.io/r/ioquatix/fingerprint)
 
 ## Motivation
 
-As the world becomes further entrenched in digital data and storage, the accuracy and correctness of said data is going to become a bigger problem. As humans create information, we are ultimately decreasing the amount of disorder/entropy in the universe. By the second law of thermodynamics, when a closed system moves from "the least to the most probable, from differentiation to sameness, from ordered individuality to a kind of chaos," (Thomas Pynchon) the only logical conclusion is that what we consider to be important data is destined to become meaningless noise in the sands of time.
+As the world becomes further entrenched in digital data and storage, the accuracy and correctness of said data is going to become a bigger problem. As humans create information, we are ultimately decreasing the amount of entropy in the universe. By the second law of thermodynamics, when a closed system moves from "the least to the most probable, from differentiation to sameness, from ordered individuality to a kind of chaos," (Thomas Pynchon) the only logical conclusion is that what we consider to be important data is destined to become meaningless noise in the sands of time.
 
 When I first suffered data-loss, it wasn't catastrophic - it was the slow deterioration of a drive which silently corrupted many files. After this event, I wanted a tool which would allow me to minimize the chance of this happening in the future. When I take a backup now, I also make a fingerprint. If I ever need to restore from backup, I can be confident the data is as it was when it was backed up.
 
@@ -118,7 +118,7 @@ It is possible to generate a fingerprint using the scan command, which takes a l
 
 #### Duplicates
 
-Fingerprint can efficiently find duplicates in one or more fingeprints.
+Fingerprint can efficiently find duplicates in one or more fingerprints.
 
 	$ fingerprint duplicates index.fingerprint
 	F .git/refs/heads/master
