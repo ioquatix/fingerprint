@@ -24,6 +24,6 @@
 # It then ensures that there is a symlink called "latest" that points 
 # to the renamed directory.
 
-require_relative '../lib/fingerprint'
+require_relative '../lib/fingerprint/command'
 
 Fingerprint::Command.call
