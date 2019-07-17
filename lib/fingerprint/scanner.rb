@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Samuel G. D. Williams. <http://www.oriontransfer.co.nz>
+# Copyright, 2011, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -89,14 +89,14 @@ module Fingerprint
 			end
 
 			File.open(path, "rb") do |file|
-				buf = ""
-				while file.read(1024 * 1024 * 10, buf)
-					total += buf.size
+				buffer = ""
+				while file.read(1024 * 1024 * 10, buffer)
+					total += buffer.bytesize
 					
 					@progress.call(total) if @progress
 					
 					@digests.each do |key, digest|
-						digest << buf
+						digest << buffer
 					end
 				end
 			end
@@ -122,6 +122,9 @@ module Fingerprint
 					metadata['file.size'] = stat.size
 					digests = digests_for(path)
 					metadata.merge!(digests)
+				elsif type == :blockdev or type == :chardev
+					metadata['file.dev_major'] = stat.dev_major
+					metadata['file.dev_minor'] = stat.dev_minor
 				end
 
 				# Extended information
@@ -150,7 +153,19 @@ module Fingerprint
 			
 			Record.new(:link, path.relative_path, metadata)
 		end
-
+		
+		def blockdev_record_for(path)
+			metadata = metadata_for(:blockdev, path)
+			
+			Record.new(:blockdev, path.relative_path, metadata)
+		end
+		
+		def chardev_record_for(path)
+			metadata = metadata_for(:chardev, path)
+			
+			Record.new(:chardev, path.relative_path, metadata)
+		end
+		
 		# Output a file and associated metadata.
 		def file_record_for(path)
 			metadata = metadata_for(:file, path)
@@ -164,6 +179,24 @@ module Fingerprint
 		# Add information about excluded paths.
 		def excluded_record_for(path)
 			Record.new(:excluded, path.relative_path)
+		end
+
+		def record_for(path)
+			stat = File.stat(path)
+			
+			if stat.symlink?
+				return link_record_for(path)
+			elsif stat.blockdev?
+				return blockdev_record_for(path)
+			elsif stat.chardev?
+				return chardev_record_for(path)
+			elsif stat.socket?
+				return socket_record_for(path)
+			elsif stat.file?
+				return file_record_for(path)
+			end
+		rescue Errno::ENOENT
+			return nil
 		end
 
 		public
@@ -185,11 +218,7 @@ module Fingerprint
 			@roots.each do |root|
 				full_path = Build::Files::Path.join(root, path)
 				
-				if full_path.symlink?
-					return link_record_for(full_path)
-				elsif full_path.file?
-					return file_record_for(full_path)
-				end
+				return record_for(full_path)
 			end
 			
 			return nil
@@ -209,6 +238,9 @@ module Fingerprint
 			if @options[:progress]
 				@roots.each do |root|
 					Find.find(root) do |path|
+						# Some special files fail here, and this was the simplest fix.
+						Find.prune unless File.exist?(path)
+						
 						if @options[:progress]
 							$stderr.puts "# Scanning: #{path}"
 						end
@@ -235,6 +267,9 @@ module Fingerprint
 				recordset << header_for(root)
 				
 				Find.find(root) do |path|
+					# Some special files fail here, and this was the simplest fix.
+					Find.prune unless File.exist?(path)
+					
 					if @options[:progress]
 						$stderr.puts "# Path: #{path.relative_path}"
 					end

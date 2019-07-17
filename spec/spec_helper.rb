@@ -1,6 +1,4 @@
-#!/usr/bin/env rspec
-
-# Copyright, 2016, by Samuel G. D. Williams. <http://www.codeotaku.com>
+# Copyright, 2019, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,20 +18,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'fingerprint/command'
-require 'fileutils'
+require 'bundler/setup'
+require 'covered/rspec'
 
-require_relative 'source_fingerprint'
-
-describe Fingerprint do
-	include_context "source fingerprint"
+RSpec.configure do |config|
+	# Enable flags like --only-failures and --next-failure
+	config.example_status_persistence_file_path = ".rspec_status"
 	
-	it "should analyze a different path" do
-		Fingerprint::Command::Top.new(["analyze", "-n", fingerprint_name, "-f", source_directory]).invoke
-		
-		expect(File).to be_exist(fingerprint_name)
-		
-		record_set = Fingerprint::RecordSet.load_file(fingerprint_name)
-		expect(record_set).to_not be_include(File.basename(fingerprint_name))
+	config.expect_with :rspec do |c|
+		c.syntax = :expect
 	end
 end

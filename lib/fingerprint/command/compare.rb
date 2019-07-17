@@ -40,9 +40,9 @@ module Fingerprint
 			one :master, "The fingerprint which represents the original data."
 			one :copy,  "The fingerprint which represents a copy of the data."
 			
-			def invoke(parent)
+			def call
 				options = @options.dup
-				options[:output] = parent.output
+				options[:output] = @parent.output
 				
 				error_count = Checker.check_files(@master, @copy, options)
 

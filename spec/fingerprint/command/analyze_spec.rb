@@ -21,34 +21,28 @@
 # THE SOFTWARE.
 
 require 'fingerprint/command'
-require 'fileutils'
 
 require_relative 'source_fingerprint'
 
-describe Fingerprint do
+RSpec.describe Fingerprint::Command::Analyze do
 	include_context "source fingerprint"
 	
-	it "should have no duplicates" do
-		Fingerprint::Command::Top.new(["analyze", "-n", fingerprint_name, "-f", source_directory]).invoke
+	it "should analyze and verify files" do
+		Fingerprint::Command::Top["analyze", "-f"].call
 		
-		expect(File).to be_exist(fingerprint_name)
+		expect(File).to be_exist(Fingerprint::INDEX_FINGERPRINT)
 		
-		record_set = Fingerprint::RecordSet.load_file(fingerprint_name)
+		top = Fingerprint::Command::Top["verify"].tap(&:call)
 		
-		top = Fingerprint::Command::Top.new(["duplicates", fingerprint_name]).tap(&:invoke)
-		
-		expect(top.command.duplicates_recordset).to be_empty
+		expect(top.command.error_count).to be == 0
 	end
 	
-	it "should have duplicates" do
-		Fingerprint::Command::Top.new(["analyze", "-n", fingerprint_name, "-f", source_directory]).invoke
+	it "should analyze path but exclude specified file" do
+		Fingerprint::Command::Top["analyze", "-n", fingerprint_name, "-f", source_directory].call
 		
 		expect(File).to be_exist(fingerprint_name)
 		
 		record_set = Fingerprint::RecordSet.load_file(fingerprint_name)
-		
-		top = Fingerprint::Command::Top.new(["duplicates", fingerprint_name, fingerprint_name]).tap(&:invoke)
-		
-		expect(top.command.duplicates_recordset).to_not be_empty
+		expect(record_set).to_not be_include(File.basename(fingerprint_name))
 	end
 end

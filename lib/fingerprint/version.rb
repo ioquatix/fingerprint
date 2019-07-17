@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Samuel G. D. Williams. <http://www.oriontransfer.co.nz>
+# Copyright, 2011, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,5 +20,5 @@
 
 
 module Fingerprint
-	VERSION = "2.1.5"
+	VERSION = "2.2.0"
 end

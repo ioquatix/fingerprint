@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Samuel G. D. Williams. <http://www.oriontransfer.co.nz>
+# Copyright, 2011, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,7 @@ module Fingerprint
 		attr :copy
 
 		# Run the checking process.
-		def check (&block)
+		def check(&block)
 			# For every file in the src, we check that it exists
 			# in the destination:
 			total_count = @master.records.count

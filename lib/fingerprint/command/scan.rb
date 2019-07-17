@@ -37,7 +37,7 @@ module Fingerprint
 				option "-p/--path <path>", "Analyze the given path relative to root.", default: "./"
 				
 				option "-x/--extended", "Include extended information about files and directories."
-				option "-s/--checksums <MD5,SHA1>", "Specify what checksum algorithms to use: #{CHECKSUMS.keys.join(', ')}.", default: DEFAULT_CHECKSUMS, type: Checksums
+				option "-s/--checksums <SHA2.256>", "Specify what checksum algorithms to use: #{CHECKSUMS.keys.join(', ')}.", default: DEFAULT_CHECKSUMS, type: Checksums
 				
 				option "--progress", "Print structured progress to standard error."
 				option "--verbose", "Verbose fingerprint output, e.g. excluded paths."
@@ -45,13 +45,13 @@ module Fingerprint
 			
 			many :paths, "Paths to scan."
 			
-			def invoke(parent)
-				@paths = [Dir.pwd] if @paths.empty?
+			def call
+				@paths = [Dir.pwd] unless @paths
 				
 				options = @options.dup
 				
 				# This configuration ensures that the output is printed to $stdout.
-				options[:output] = parent.output
+				options[:output] = @parent.output
 				options[:recordset] = nil
 				
 				Scanner.scan_paths(@paths, options)

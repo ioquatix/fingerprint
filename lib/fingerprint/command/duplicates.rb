@@ -41,8 +41,8 @@ module Fingerprint
 			
 			attr :duplicates_recordset
 			
-			def invoke(parent)
-				@options[:output] = parent.output
+			def call
+				@options[:output] = @parent.output
 				
 				@duplicates_recordset = RecordSet.new
 				results = RecordSetPrinter.new(duplicates_recordset, @options[:output])
@@ -54,7 +54,7 @@ module Fingerprint
 					
 					ignore_similar = false
 					
-					copy_file_paths = @copies
+					copy_file_paths = @copies || []
 					if copy_file_paths.size == 0
 						copy_file_paths = [master_file_path]
 						ignore_similar = true

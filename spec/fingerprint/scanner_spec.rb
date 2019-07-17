@@ -35,9 +35,9 @@ RSpec.shared_examples "scanner checksum" do |digests|
 end
 
 RSpec.describe "defaults" do
-  it "defaults to SHA2.256 only" do
-    expect(Fingerprint::DEFAULT_CHECKSUMS).to eq(['SHA2.256'])
-  end
+	it "defaults to SHA2.256 only" do
+		expect(Fingerprint::DEFAULT_CHECKSUMS).to eq(['SHA2.256'])
+	end
 end
 
 RSpec.describe ['MD5'] do
@@ -49,11 +49,11 @@ RSpec.describe ['MD5'] do
 end
 
 RSpec.describe ['SHA1'] do
-  it_behaves_like "scanner checksum",
-    "corpus/README.md" => {
-      "file.size" => 52,
-      "key.SHA1" => "a36492a961d2672efc481059860af5c1dd9a2aed"
-    }
+	it_behaves_like "scanner checksum",
+		"corpus/README.md" => {
+			"file.size" => 52,
+			"key.SHA1" => "a36492a961d2672efc481059860af5c1dd9a2aed"
+		}
 end
 
 RSpec.describe ['SHA2.256', 'SHA2.384', 'SHA2.512'] do

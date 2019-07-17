@@ -38,7 +38,7 @@ module Fingerprint
 				option "-f/--force", "Force all operations to complete despite warnings."
 				option "-x/--extended", "Include extended information about files and directories."
 				
-				option "-s/--checksums <MD5,SHA1>", "Specify what checksum algorithms to use (#{Fingerprint::CHECKSUMS.keys.join(', ')}).", default: Fingerprint::DEFAULT_CHECKSUMS
+				option "-s/--checksums <SHA2.256>", "Specify what checksum algorithms to use (#{Fingerprint::CHECKSUMS.keys.join(', ')}).", default: Fingerprint::DEFAULT_CHECKSUMS
 				
 				option "--progress", "Print structured progress to standard error."
 				option "--verbose", "Verbose fingerprint output, e.g. excluded paths."
@@ -46,13 +46,11 @@ module Fingerprint
 				option "--fail-on-errors", "Exit with non-zero status if errors are encountered."
 			end
 			
-			many :paths, "Paths relative to the root to use for verification, or ./ if not specified."
+			many :paths, "Paths relative to the root to use for verification, or ./ if not specified.", default: ["./"]
 			
 			attr :error_count
 			
-			def invoke(parent)
-				@paths = ["./"] if @paths.empty?
-
+			def call
 				input_file = @options[:name]
 
 				unless File.exist? input_file
@@ -60,7 +58,7 @@ module Fingerprint
 				end
 
 				options = @options.dup
-				options[:output] = parent.output
+				options[:output] = @parent.output
 
 				master = RecordSet.new
 

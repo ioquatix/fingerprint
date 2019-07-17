@@ -39,17 +39,15 @@ module Fingerprint
 				
 				option "-f/--force", "Force all operations to complete despite warnings."
 				option "-x/--extended", "Include extended information about files and directories."
-				option "-s/--checksums <MD5,SHA1>", "Specify what checksum algorithms to use: #{CHECKSUMS.keys.join(', ')}.", default: DEFAULT_CHECKSUMS, type: Checksums
+				option "-s/--checksums <SHA2.256>", "Specify what checksum algorithms to use: #{CHECKSUMS.keys.join(', ')}.", default: DEFAULT_CHECKSUMS, type: Checksums
 				
 				option "--progress", "Print structured progress to standard error."
 				option "--verbose", "Verbose fingerprint output, e.g. excluded paths."
 			end
 			
-			many :paths, "Paths relative to the root to use for verification, or pwd if not specified."
+			many :paths, "Paths relative to the root to use for verification, or pwd if not specified.", default: ["./"]
 			
-			def invoke(parent)
-				@paths = ["./"] if @paths.empty?
-				
+			def call
 				output_file = @options[:name]
 
 				if File.exist?(output_file) and !@options[:force]

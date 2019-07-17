@@ -1,4 +1,6 @@
-# Copyright, 2011, by Samuel G. D. Williams. <http://www.codeotaku.com>
+#!/usr/bin/env rspec
+
+# Copyright, 2016, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,39 +20,34 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'fingerprint/record'
-require 'fingerprint/version'
-require 'fingerprint/scanner'
-require 'fingerprint/checker'
+require 'fingerprint/command'
 
-module Fingerprint
-	# A helper function to check two paths for consistency. Provides callback from +Fingerprint::Checker+.
-	def self.check_paths(master_path, copy_path, **options, &block)
-		master = Scanner.new([master_path])
-		copy = Scanner.new([copy_path])
+require_relative 'source_fingerprint'
+
+RSpec.describe Fingerprint::Command::Duplicates do
+	include_context "source fingerprint"
+	
+	it "should have no duplicates" do
+		Fingerprint::Command::Top["analyze", "-n", fingerprint_name, "-f", source_directory].call
 		
-		master_recordset = RecordSet.new
-		copy_recordset = SparseRecordSet.new(copy)
+		expect(File).to be_exist(fingerprint_name)
 		
-		master.scan(master_recordset)
+		record_set = Fingerprint::RecordSet.load_file(fingerprint_name)
 		
-		checker = Checker.new(master_recordset, copy_recordset, **options)
+		top = Fingerprint::Command::Top["duplicates", fingerprint_name].tap(&:call)
 		
-		checker.check(&block)
-		
-		return checker
+		expect(top.command.duplicates_recordset).to be_empty
 	end
 	
-	# Returns true if the given paths contain identical files. Useful for expectations, e.g. `expect(Fingerprint).to be_identical(source, destination)`
-	def self.identical?(source, destination, &block)
-		failures = 0
+	it "should have duplicates" do
+		Fingerprint::Command::Top["analyze", "-n", fingerprint_name, "-f", source_directory].call
 		
-		check_paths(source, destination) do |record, name, message|
-			failures += 1
-			
-			yield(record) if block_given?
-		end
+		expect(File).to be_exist(fingerprint_name)
 		
-		return failures == 0
+		record_set = Fingerprint::RecordSet.load_file(fingerprint_name)
+		
+		top = Fingerprint::Command::Top["duplicates", fingerprint_name, fingerprint_name].tap(&:call)
+		
+		expect(top.command.duplicates_recordset).to_not be_empty
 	end
 end

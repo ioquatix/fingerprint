@@ -20,8 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-shared_context "source fingerprint" do
-	let(:source_directory) {File.expand_path("../../lib", __dir__)}
+require 'fileutils'
+
+RSpec.shared_context "source fingerprint" do
+	let(:source_directory) {File.expand_path("../../../lib", __dir__)}
 	let(:fingerprint_name) {File.join(__dir__, "test.fingerprint")}
 	
 	after(:each) do

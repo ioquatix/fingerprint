@@ -34,6 +34,10 @@ require_relative 'command/duplicates'
 
 module Fingerprint
 	module Command
+		def self.call(*args)
+			Top.call(*args)
+		end
+		
 		class Top < Samovar::Command
 			self.description = "A file checksum analysis and verification tool."
 			
@@ -62,21 +66,22 @@ module Fingerprint
 				end
 			end
 			
-			nested '<command>',
+			nested :command, {
 				'scan' => Scan,
 				'analyze' => Analyze,
 				'verify' => Verify,
 				'compare' => Compare,
 				'duplicates' => Duplicates
+			}, default: 'analyze'
 			
-			def invoke(program_name: File.basename($0))
+			def call
 				if @options[:version]
 					puts "fingerprint v#{VERSION}"
-				elsif @options[:help] or @command.nil?
-					print_usage(program_name)
+				elsif @options[:help]
+					self.print_usage(program_name)
 				else
 					chdir do
-						@command.invoke(self)
+						@command.call
 					end
 				end
 			end

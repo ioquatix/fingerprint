@@ -1,14 +1,23 @@
 language: ruby
-sudo: false
-rvm:
-  - 2.1.8
-  - 2.2.4
-  - 2.3.0
-  - ruby-head
-  - rbx-2
-env: COVERAGE=true
+dist: xenial
+cache: bundler
+
 matrix:
-  fast_finish: true
+  include:
+    - rvm: 2.3
+    - rvm: 2.4
+    - rvm: 2.5
+    - rvm: 2.6
+    - rvm: 2.6
+      env: COVERAGE=Summary,Coveralls
+    - rvm: truffleruby
+    - rvm: jruby-head
+      env: JRUBY_OPTS="--debug -X+O"
+    - rvm: ruby-head
+    - rvm: 2.6
+      os: osx
   allow_failures:
-    - rvm: "ruby-head"
-    - rvm: "rbx-2"
+    - rvm: truffleruby
+    - rvm: ruby-head
+    - rvm: jruby-head
+    - rvm: truffleruby
