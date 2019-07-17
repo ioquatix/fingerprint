@@ -19,5 +19,5 @@
 # THE SOFTWARE.
 
 module Fingerprint
-	VERSION = "3.0.0"
+	VERSION = "3.0.1"
 end
