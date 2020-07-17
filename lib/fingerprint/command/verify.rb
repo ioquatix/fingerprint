@@ -70,7 +70,7 @@ module Fingerprint
 					options.merge!(master.configuration.options)
 				end
 
-				scanner = Scanner.new(@paths, options)
+				scanner = Scanner.new(@paths, **options)
 				
 				# We use a sparse record set here, so we can't check for additions.
 				copy = SparseRecordSet.new(scanner)

@@ -54,7 +54,7 @@ module Fingerprint
 				options[:output] = @parent.output
 				options[:recordset] = nil
 				
-				Scanner.scan_paths(@paths, options)
+				Scanner.scan_paths(@paths, **options)
 			end
 		end
 	end

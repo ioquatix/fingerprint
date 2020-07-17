@@ -62,7 +62,7 @@ module Fingerprint
 					File.open(output_file, "w") do |io|
 						options[:output] = io
 
-						Scanner.scan_paths(@paths, options)
+						Scanner.scan_paths(@paths, **options)
 					end
 					finished = true
 				ensure

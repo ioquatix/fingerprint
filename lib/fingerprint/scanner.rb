@@ -323,7 +323,7 @@ module Fingerprint
 		end
 
 		# A helper function to scan a set of directories.
-		def self.scan_paths(paths, options = {})
+		def self.scan_paths(paths, **options)
 			if options[:output]
 				if options.key? :recordset
 					recordset = options[:recordset]
@@ -334,7 +334,7 @@ module Fingerprint
 				options[:recordset] = RecordSetPrinter.new(recordset, options[:output])
 			end
 
-			scanner = Scanner.new(paths, options)
+			scanner = Scanner.new(paths, **options)
 
 			scanner.scan(options[:recordset])
 
