@@ -37,7 +37,7 @@ module Fingerprint
 			end
 			
 			one :master, "The source fingerprint which represents the primarily file list."
-			many :copies, "Zero or more fingerprints which might contain duplicates."
+			many :copies, "Zero or more fingerprints which might contain duplicates.", default: []
 			
 			attr :duplicates_recordset
 			
@@ -54,7 +54,8 @@ module Fingerprint
 					
 					ignore_similar = false
 					
-					copy_file_paths = @copies || []
+					copy_file_paths = @copies
+					
 					if copy_file_paths.size == 0
 						copy_file_paths = [master_file_path]
 						ignore_similar = true
