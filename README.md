@@ -6,6 +6,10 @@ Fingerprint is a general purpose data integrity tool that uses cryptographic has
 
 Traditionally, the only way to preserve data was to take regular backups and hope that any unwanted changes that occurred would be major, obvious ones (such as loss of the disk). This approach means trusting all the software to which the data is exposed: operating systems, backup software, communications software, compression software, encryption software, and archiving software. Unfortunately, each of these systems is highly complex and can inflict all kinds of damage on data, much of the damage undetectable to humans. Fingerprint allows data to be monitored, detecting even the change of a single bit.
 
+[![Development Status](https://github.com/ioquatix/fingerprint/workflows/Development/badge.svg)](https://github.com/ioquatix/fingerprint/actions?workflow=Development)
+
+## Features
+
 Fingerprint can be used for:
 
   - Preservation: Detect corruption of important data, e.g. web server integrity, write-once storage verification.
@@ -17,8 +21,6 @@ Fingerprint can be used for:
 
 A companion app is available in the [Mac App Store](https://itunes.apple.com/nz/app/fingerprint/id470866821). Purchasing this app helps fund the open source software development.
 
-[![Development Status](https://github.com/ioquatix/fingerprint/workflows/Development/badge.svg)](https://github.com/ioquatix/fingerprint/actions?workflow=Development)
-
 ## Motivation
 
 As the world becomes further entrenched in digital data and storage, the accuracy and correctness of said data is going to become a bigger problem. As humans create information, we are ultimately decreasing the amount of entropy in the universe. By the second law of thermodynamics, when a closed system moves from "the least to the most probable, from differentiation to sameness, from ordered individuality to a kind of chaos," (Thomas Pynchon) the only logical conclusion is that what we consider to be important data is destined to become meaningless noise in the sands of time.
@@ -29,111 +31,9 @@ As fingerprint provides a fast way to compare the files, I've also extended it t
 
 In cases where I've been concerned about the migration of data (e.g. copying my entire home directory from one system to another), I've used fingerprint to generate a transcript on the source machine, and then run it on the destination machine, to reassure me that the data was copied correctly and completely.
 
-## Installation
-
-Add the gem to your project:
-
-```
-$ bundle add fingerprint
-```
-
-Or install it globally:
-
-```
-$ gem install fingerprint
-```
-
 ## Usage
 
-Please consult the [GUIDE](GUIDE.md) for an overview of how fingerprint command can be used.
-
-### RSpec
-
-The simplest usage of fingerprint is checking if two directories are equivalent:
-
-``` ruby
-Fingerprint.identical?(source_path, destination_path) do |record|
-	puts "#{record.path} is different"
-end
-```
-
-This would catch additions, removals, and changes. You can use this in RSpec:
-
-``` ruby
-expect(Fingerprint).to be_identical(source_path, destination_path)
-```
-
-### Command Line
-
-The `fingerprint` command has a high-level and low-level interface.
-
-#### High-level Interface
-
-This usage is centered around analysing a given directory using `fingerprint analyze` and then, at a later date, checking that the directory is not missing any files and that all files are the same as they were originally, using `fingerprint verify`.
-
-```
-$ fingerprint analyze
-$ fingerprint verify
-S 0 error(s) detected.
-	error.count 0
-```
-
-If we modify a file (`file-1.txt` in this example), it will be reported:
-
-```
-$ fingerprint verify
-W file-1.txt
-	changes.file.size.new 8
-	changes.file.size.old 4
-	changes.key.SHA2.256.new 1f2ec52b774368781bed1d1fb140a92e0eb6348090619c9291f9a5a3c8e8d151
-	changes.key.SHA2.256.old b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c
-	error.code keys_different
-	error.message Key SHA2.256 does not match
-S 1 error(s) detected.
-	error.count 1
-```
-
-This command does not report files which have been added.
-
-#### Low-level interface
-
-It is possible to generate a fingerprint using the scan command, which takes a list of paths and writes out the transcript.
-
-```
-% fingerprint scan spec 
-C /home/samuel/Documents/Programming/ioquatix/fingerprint/spec
-	fingerprint.version 2.0.0
-	options.checksums MD5, SHA2.256
-	options.extended false
-	summary.time.start 2016-06-25 11:46:12 +1200
-D 
-D fingerprint
-F fingerprint/check_paths_spec.rb
-	file.size 1487
-	key.MD5 ef77034977daa683bbaaed47c553f6f5
-	key.SHA2.256 970ec4663ffc257ec1d4f49f54711c38434108d580afc0c92ea7bf864e08a1e0
-S 1 files processed.
-	summary.directories 2
-	summary.excluded 0
-	summary.files 1
-	summary.size 1487
-	summary.time.end 2016-06-25 11:46:12 +1200
-```
-
-#### Duplicates
-
-Fingerprint can efficiently find duplicates in one or more fingerprints.
-
-```
-$ fingerprint duplicates index.fingerprint
-F .git/refs/heads/master
-	file.size 41
-	fingerprint index.fingerprint
-	key.MD5 aaadaeee72126dedcd4044d687a74068
-	key.SHA2.256 6750f057b38c2ea93e3725545333b8167301b6d8daa0626b0a2a613a6a4f4f04
-	original.fingerprint index.fingerprint
-	original.path .git/refs/remotes/origin/master
-```
+Please see the [project documentation](https://ioquatix.github.io/fingerprint).
 
 ## Todo
 

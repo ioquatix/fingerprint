@@ -1,86 +1,6 @@
-# Fingerprint Guide
+# Use Cases
 
-This guide gives an overview of the various ways in which fingerprint can be used.
-
-## Fingerprint Digests
-
-The following are the options for which digests can be generated:
-
-* `MD5`
-* `SHA1`
-* `SHA2.256`
-* `SHA2.384`
-* `SHA2.512`
-
-`SHA2.256` is the default.
-
-The use of `MD5` and `SHA1` are no longer recommended due to the
-risk of hash collisions.
-
-## Generating fingerprints
-
-Fingerprint is designed to index directories. The basic verb `scan` will index all paths specified in order (or the current path if none is given).
-
-``` text
-$ fingerprint scan /tmp/test
-C /tmp/test
-	fingerprint.version 2.1.5
-	options.checksums SHA2.256
-	options.extended false
-	summary.time.start 2016-12-09 16:42:41 -0800
-D
-F file-1.txt
-	file.size 0
-	key.SHA2.256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-F file-2.txt
-	file.size 0
-	key.SHA2.256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-F file-3.sh
-	file.size 0
-	key.SHA2.256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-S 3 files processed.
-	summary.directories 1
-	summary.excluded 0
-	summary.files 3
-	summary.size 0
-	summary.time.end 2016-12-09 16:42:41 -0800
-```
-
-## Verifing Fingerprints
-
-Files can be checked against a given fingerprint. In the case of `verify`, only changes and deletions will be reported. Additions are not reported.
-
-To generate a fingerprint for a given path:
-
-	fingerprint scan /tmp/test > /tmp/test.fingerprint
-
-This fingerprint can then be used to verify that no files have changed:
-
-	$ fingerprint verify -n /tmp/test.fingerprint /tmp/test
-	S 0 error(s) detected.
-		error.count 0
-
-## Comparing Fingerprints
-
-The `verify` operation checks a given fingerprint against a current filesystem, and can work efficiently according to the files in the source fingerprint. In the case that you want to compare two fingerprints, you can find all differences, including additions. This can be useful when comparing two backups to see what files changed (e.g. a tripwire).
-
-```
-/tmp$ fingerprint scan /tmp/test > /tmp/test1.fingerprint
-/tmp$ vi test/file-1.txt  (change this file)
-/tmp$ fingerprint scan /tmp/test > /tmp/test2.fingerprint
-/tmp$ fingerprint compare /tmp/test1.fingerprint /tmp/test2.fingerprint
-W file-1.txt
-	changes.file.size.new 4
-	changes.file.size.old 0
-	changes.key.SHA2.256.new b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c
-	changes.key.SHA2.256.old e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-	error.code keys_different
-	error.message Key SHA2.256 does not match
-S 1 error(s) detected.
-	error.count 1
-```
-
-Here we can see files which have been changed and added to `/tmp/test` after a modifying a file.
+This guide explains some typical use cases for `fingerprint` and how to implement them.
 
 ## Transmission and Archival Usage
 
@@ -88,16 +8,18 @@ Fingerprint provides two high-level operations `analyze` which is roughly equiva
 
 Typical use cases would include analyzing a directory before copying it, and verifying it after the copy, or analyzing a backup and verifying it before restore.
 
-	-- Fingerprint the local data:
-	$ fingerprint --root /srv/http analyze
-	
-	-- Copy it to the remote system:
-	$ rsync -a /srv/http production:/srv/http
-	
-	-- Run fingerprint on the remote system to verify the data copied correctly:
-	$ ssh production fingerprint --root /srv/http verify
-	S 0 error(s) detected.
-		error.count 0
+~~~ bash
+-- Fingerprint the local data:
+$ fingerprint --root /srv/http analyze
+
+-- Copy it to the remote system:
+$ rsync -a /srv/http production:/srv/http
+
+-- Run fingerprint on the remote system to verify the data copied correctly:
+$ ssh production fingerprint --root /srv/http verify
+S 0 error(s) detected.
+	error.count 0
+~~~
 
 This is equally useful for traditional backup mediums, e.g. write-only storage, offline backups, etc.
 
@@ -121,34 +43,38 @@ Once data has been analyzed, you can store it on archival media (e.g. optical or
 
 Malicious modification of files can be detected using fingerprint. This setup is typically referred to as a tripwire, because when an attacker modifies some critical system files, the system administrator will be notified. To maintain the security of such a setup, the fingerprint should be stored on a separate server:
 
-	$ mv latest.fingerprint previous.fingerprint
-	$ ssh data.example.com fingerprint scan /etc > latest.fingerprint
-	$ fingerprint compare previous.fingerprint latest.fingerprint
-	S 0 error(s) detected.
-		error.count 0
+~~~ bash
+$ mv latest.fingerprint previous.fingerprint
+$ ssh data.example.com fingerprint scan /etc > latest.fingerprint
+$ fingerprint compare previous.fingerprint latest.fingerprint
+S 0 error(s) detected.
+	error.count 0
+~~~
 
 This can be scripted and run in an hourly cron job:
 
-	#!/usr/bin/env ruby
+~~~ ruby
+#!/usr/bin/env ruby
 
-	require 'fileutils'
+require 'fileutils'
 
-	REMOTE = "server.example.com"
-	DIRECTORY = "/etc"
-	PREVIOUS = "previous.fingerprint"
-	LATEST = "latest.fingerprint"
+REMOTE = "server.example.com"
+DIRECTORY = "/etc"
+PREVIOUS = "previous.fingerprint"
+LATEST = "latest.fingerprint"
 
-	if File.exist? LATEST
-		FileUtils.mv LATEST, PREVIOUS
-	end
+if File.exist? LATEST
+	FileUtils.mv LATEST, PREVIOUS
+end
 
-	$stderr.puts "Generating fingerprint of #{REMOTE}:#{DIRECTORY}..."
-	system("ssh #{REMOTE} fingerprint #{DIRECTORY} > #{LATEST}")
+$stderr.puts "Generating fingerprint of #{REMOTE}:#{DIRECTORY}..."
+system("ssh #{REMOTE} fingerprint #{DIRECTORY} > #{LATEST}")
 
-	if File.exist? PREVIOUS
-		$stderr.puts "Comparing fingerprints..."
-		system('fingerprint', 'compare', '-a', PREVIOUS, LATEST)
-	end
+if File.exist? PREVIOUS
+	$stderr.puts "Comparing fingerprints..."
+	system('fingerprint', 'compare', '-a', PREVIOUS, LATEST)
+end
+~~~
 
 ## Backup integrity
 
@@ -162,19 +88,23 @@ However, the real world is often not so simple. Some software doesn't provide fa
 
 To ensure that data has been backed up correctly, use fingerprint to analyze the data before it is backed up.
 
-	-- Perform the data analysis
-	$ sudo fingerprint analyze -f /etc
+~~~ bash
+-- Perform the data analysis
+$ sudo fingerprint analyze -f /etc
 
-	-- Backup the data to a remote system
-	$ sudo rsync --archive /etc backups.example.com:/mnt/backups/server.example.com/etc
+-- Backup the data to a remote system
+$ sudo rsync --archive /etc backups.example.com:/mnt/backups/server.example.com/etc
+~~~
 
 After the data has been copied to the remote backup device, restore the data to a temporary location and use fingerprint to verify the data. The exact procedure will depend on your backup system, e.g. if you use a tape you may need to restore from the tape to local storage first.
 
-	-- On the backup server
-	$ cd /mnt/backups/server.example.com/etc
-	$ fingerprint verify
-	S 0 error(s) detected.
-		error.count 0
+~~~ bash
+-- On the backup server
+$ cd /mnt/backups/server.example.com/etc
+$ fingerprint verify
+S 0 error(s) detected.
+	error.count 0
+~~~
 
 ### Preserving Backups
 
@@ -188,41 +118,47 @@ Fingerprint can be used to ensure that a set of files has been delivered without
 
 To sign fingerprints, the first step is to create a private and public key pair. This is easily achieved using OpenSSL:
 
-	-- Create a private key, which you must keep secure.
-	$ openssl genrsa -out private.pem 2048
-	Generating RSA private key, 2048 bit long modulus
-	.............+++
-	........+++
-	e is 65537 (0x10001)
+~~~ bash
+-- Create a private key, which you must keep secure.
+$ openssl genrsa -out private.pem 2048
+Generating RSA private key, 2048 bit long modulus
+.............+++
+........+++
+e is 65537 (0x10001)
 
-	-- Create a public key, which can be used to verify sealed fingerprints.
-	$ openssl rsa -in private.pem -pubout -out public.pem
-	writing RSA key
+-- Create a public key, which can be used to verify sealed fingerprints.
+$ openssl rsa -in private.pem -pubout -out public.pem
+writing RSA key
+~~~
 
 ### Signing Fingerprints
 
 After you have generated a fingerprint, you can sign it easily using the private key:
 
-	-- We assume here that you are using fingerprint analyze to generate fingerprints.
-	$ openssl dgst -sha1 -sign private.pem -out index.signature index.fingerprint
+~~~ bash
+-- We assume here that you are using fingerprint analyze to generate fingerprints.
+$ openssl dgst -sha1 -sign private.pem -out index.signature index.fingerprint
+~~~
 
 ### Verifying Fingerprint Signature
 
 You can easily verify the security of the fingerprint data:
 
-	$ openssl dgst -sha1 -verify public.pem -signature index.signature index.fingerprint
-	Verified OK
-	-- Fingerprint data has been cryptographically verified
+~~~ bash
+$ openssl dgst -sha1 -verify public.pem -signature index.signature index.fingerprint
+Verified OK
+-- Fingerprint data has been cryptographically verified
 
-	$ fingerprint verify
-	S 0 error(s) detected.
-		error.count 0
-	Data verified, 0 errors found.
-	-- File list has been checked and no errors.
+$ fingerprint verify
+S 0 error(s) detected.
+	error.count 0
+Data verified, 0 errors found.
+-- File list has been checked and no errors.
+~~~
 
 As long as private key is kept secure, we can be sure that these files have not been tampered with.
 
-### Notarizing
+## Notarizing
 
 In many cases it is good to ensure that documents existed at a particular time. With modern document storage systems, it may be impossible to verify this by simply relying on databases and filesystems alone, especially because technology can be manipulated.
 
