@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		
+			<title>Fingerprint</title>
+		
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		
+		<link rel="icon" type="image/png" href="_static/icon.png"/>
+		<link rel="stylesheet" href="_static/site.css" type="text/css" media="screen"/>
+		
+		<script src="_components/jquery/jquery.min.js"></script>
+		<script src="_components/jquery-syntax/jquery.syntax.min.js"></script>
+		
+		<script type="text/javascript">
+		//<![CDATA[
+			jQuery(function($) {
+				$.syntax();
+			});
+		//]]>
+		</script>
+	</head>
+
+	<body class="">
+		<nav> › <a class="link" href="index.html">Project</a></nav>
+		
+		
+	<h1>Fingerprint</h1><main><blockquote>
+<p>Matter and energy degrade to more probable, less informative states. The larger the amounts of information processed or diffused, the more likely it is that information will degrade toward meaningless variety, like noise or information overload, or sterile uniformity — Orrin Klapp</p>
+</blockquote>
+<p>Fingerprint is a general purpose data integrity tool that uses cryptographic hashes to detect changes in files and directory trees. The fingerprint command scans a directory tree and generates a fingerprint file containing the names and cryptographic hashes of the files in the tree. This snapshot can be later used to generate a list of files that have been created, deleted or modified. If so much as a single bit in the file data has changed, Fingerprint will detect it.</p>
+<p>Traditionally, the only way to preserve data was to take regular backups and hope that any unwanted changes that occurred would be major, obvious ones (such as loss of the disk). This approach means trusting all the software to which the data is exposed: operating systems, backup software, communications software, compression software, encryption software, and archiving software. Unfortunately, each of these systems is highly complex and can inflict all kinds of damage on data, much of the damage undetectable to humans. Fingerprint allows data to be monitored, detecting even the change of a single bit.</p>
+<p><a href="https://github.com/ioquatix/fingerprint/actions?workflow=Development"><img src="https://github.com/ioquatix/fingerprint/workflows/Development/badge.svg" alt="Development Status"/></a></p>
+<section id="features"><h2>Features</h2>
+<p>Fingerprint can be used for:</p>
+<ul>
+<li>Preservation: Detect corruption of important data, e.g. web server integrity, write-once storage verification.</li>
+<li>Security: Detect changes made by intruders, e.g. firewall integrity, network configuration, software auditing.</li>
+<li>Transfers:  Verify file copies and transfers between different systems, e.g. file transfer integrity.</li>
+<li>Sealing: Cryptographically seal critical files, e.g. document verification.</li>
+<li>Notarizing: Prove that documents existed at a particular time.</li>
+<li>Backups: Verify restored backups to ensure that backups are sound, e.g. backup verification and integrity.</li>
+</ul>
+<p>A companion app is available in the <a href="https://itunes.apple.com/nz/app/fingerprint/id470866821">Mac App Store</a>. Purchasing this app helps fund the open source software development.</p>
+</section><section id="motivation"><h2>Motivation</h2>
+<p>As the world becomes further entrenched in digital data and storage, the accuracy and correctness of said data is going to become a bigger problem. As humans create information, we are ultimately decreasing the amount of entropy in the universe. By the second law of thermodynamics, when a closed system moves from &quot;the least to the most probable, from differentiation to sameness, from ordered individuality to a kind of chaos,&quot; (Thomas Pynchon) the only logical conclusion is that what we consider to be important data is destined to become meaningless noise in the sands of time.</p>
+<p>When I first suffered data-loss, it wasn't catastrophic - it was the slow deterioration of a drive which silently corrupted many files. After this event, I wanted a tool which would allow me to minimize the chance of this happening in the future. When I take a backup now, I also make a fingerprint. If I ever need to restore from backup, I can be confident the data is as it was when it was backed up.</p>
+<p>As fingerprint provides a fast way to compare the files, I've also extended it to find duplicates within one or more fingerprints. This is useful for de-duplicating your home directory and I've also used it when marking assignments to find blatant copying.</p>
+<p>In cases where I've been concerned about the migration of data (e.g. copying my entire home directory from one system to another), I've used fingerprint to generate a transcript on the source machine, and then run it on the destination machine, to reassure me that the data was copied correctly and completely.</p>
+</section><section id="usage"><h2>Usage</h2>
+<p>Please browse the <a href="source/index.html">source code index</a> or refer to the guides below.</p>
+
+	<h3><a href="guides/getting-started/index.html">Getting Started</a></h3>
+	
+		<p>This guide explains how to use <code>fingerprint</code> gem.</p>
+
+	<h3><a href="guides/use-cases/index.html">Use Cases</a></h3>
+	
+		<p>This guide explains some typical use cases for <code>fingerprint</code> and how to implement them.</p>
+
+	<h3><a href="guides/rspec-integration/index.html">RSpec Integration</a></h3>
+	
+		<p>This guide explains how <code>fingerprint</code> can be used with RSpec to compare files.</p>
+
+
+</section><section id="todo"><h2>Todo</h2>
+<ul>
+<li>Command line option to show files that have changed but have the same modified time (hardware corruption).</li>
+<li>Supporting tools for signing fingerprints easily.</li>
+<li>Because fingerprint is currently IO bound in terms of performance, single-threaded checksumming is fine, but for SSD and other fast storage, it might be possible to improve speed somewhat by using a map-reduce style approach.</li>
+</ul>
+</section><section id="contributing"><h2>Contributing</h2>
+<ol>
+<li>Fork it</li>
+<li>Create your feature branch (<code>git checkout -b my-new-feature</code>)</li>
+<li>Commit your changes (<code>git commit -am 'Add some feature'</code>)</li>
+<li>Push to the branch (<code>git push origin my-new-feature</code>)</li>
+<li>Create new Pull Request</li>
+</ol>
+</section><section id="license"><h2>License</h2>
+<p>Released under the MIT license.</p>
+<p>Copyright, 2019, by <a href="http://www.codeotaku.com/samuel-williams">Samuel G. D. Williams</a>.</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the &quot;Software&quot;), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.</p>
+<p>THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.</p>
+</section></main>
+		
+		<footer>Documentation generated by <a href="https://github.com/socketry/utopia-project">Utopia::Project</a>.</footer>
+	</body>
+</html>

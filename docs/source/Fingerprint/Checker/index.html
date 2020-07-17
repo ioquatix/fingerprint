@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		
+			<title>Fingerprint::Checker</title>
+		
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		
+		<link rel="icon" type="image/png" href="../../../_static/icon.png"/>
+		<link rel="stylesheet" href="../../../_static/site.css" type="text/css" media="screen"/>
+		
+		<script src="../../../_components/jquery/jquery.min.js"></script>
+		<script src="../../../_components/jquery-syntax/jquery.syntax.min.js"></script>
+		
+		<script type="text/javascript">
+		//<![CDATA[
+			jQuery(function($) {
+				$.syntax();
+			});
+		//]]>
+		</script>
+	</head>
+
+	<body class="">
+		<nav> › <a class="link" href="../../../index.html">Project</a> › <a class="link" href="../../index.html">Source</a></nav>
+		
+		
+	<h1><code class="language-ruby">Fingerprint::Checker</code></h1>
+	
+	<main>
+		<p>Given two fingerprints (master and copy) ensures that the copy has at least everything contained
+in master: For every file in the master, a corresponding file must exist in the copy. This means that
+there may be extraneous files in the copy, but ensures that every file in the master has been replicated
+accurately.</p>
+<p>At this time, this implementation may require a large amount of memory, proportional to the number of
+files being checked.</p>
+<p>Master and copy are +IO+ objects corresponding to the output produced by +Fingerprint::Scanner+.</p>
+		
+		
+		<h2>Definitions</h2>
+		
+		<h3 id="Fingerprint::Checker#check"><code class="language-ruby">def check(&amp;block)</code></h3><p>Run the checking process.</p>
+<details>
+							<summary><h4>Implementation</h4></summary>
+							<pre><code class="language-ruby">def check(&amp;block)
+	# For every file in the src, we check that it exists
+	# in the destination:
+	total_count = @master.records.count
+	processed_size = 0
+	total_size = @master.records.inject(0) { |count, record| count + (record['file.size'] || 0).to_i }
+	
+	if @options[:additions]
+		copy_paths = @copy.paths.dup
+	else
+		copy_paths = {}
+	end
+	
+	@master.records.each_with_index do |record, processed_count|
+		copy_paths.delete(record.path)
+
+		if @options[:progress]
+			$stderr.puts &quot;# Checking: #{record.path}&quot;
+		end
+
+		next if record.mode != :file
+
+		result, message = @copy.compare(record)
+		if result != :valid
+			yield record, result, message
+		elsif @options[:extended]
+			# Extended check compares other attributes such as user, group, file modes.
+			changes = record.diff(copy.paths[record.path])
+			
+			if changes.size &gt; 0
+				yield record, :attribute_changed, &quot;Attribute(s) #{changes.join(', ')} changed&quot;
+			end
+		end
+		
+		if @options[:progress]
+			$stderr.puts &quot;# Progress: File #{processed_count} / #{total_count}; Byte #{processed_size} / #{total_size} = #{sprintf('%0.2f%', processed_size.to_f / total_size.to_f * 100.0)}&quot;
+
+			processed_size += (record['file.size'] || 0).to_i
+		end
+	end
+	
+	if @options[:additions]
+		copy_paths.each do |path, record|
+			next unless record.mode == :file || record.mode == :directory
+			
+			yield record, :addition, &quot;File added&quot;
+		end
+	end
+end</code></pre>
+						</details><h3 id="Fingerprint::Checker#failures"><code class="language-ruby">attr :failures</code></h3><p>A list of files which either did not exist in the copy, or had the wrong checksum.</p>
+<h3 id="Fingerprint::Checker.verify"><code class="language-ruby">def self.verify(master, copy, **options, &amp;block)</code></h3><p>Helper function to check two fingerprint files.</p>
+<details>
+							<summary><h4>Implementation</h4></summary>
+							<pre><code class="language-ruby">def self.verify(master, copy, **options, &amp;block)
+	error_count = 0 
+
+	errors = options.delete(:recordset) || RecordSet.new
+	if options[:output]
+		errors = RecordSetPrinter.new(errors, options[:output])
+	end
+
+	checker = Checker.new(master, copy, **options)
+
+	checker.check do |record, result, message|
+		error_count += 1
+
+		metadata = {
+			'error.code' =&gt; result,
+			'error.message' =&gt; message
+		}
+
+		if result == :addition
+			metadata.merge!(record.metadata)
+			
+			errors &lt;&lt; Record.new(:warning, record.path, metadata)
+		elsif (copy = checker.copy.paths[record.path])
+			changes = record.diff(copy)
+
+			changes.each do |name|
+				metadata[&quot;changes.#{name}.old&quot;] = record[name]
+				metadata[&quot;changes.#{name}.new&quot;] = copy[name]
+			end
+
+			errors &lt;&lt; Record.new(:warning, record.path, metadata)
+		else
+			errors &lt;&lt; Record.new(:warning, record.path, metadata)
+		end
+	end
+
+	if error_count
+		summary_message = &quot;#{error_count} error(s) detected.&quot;
+	else
+		summary_message = &quot;No errors detected&quot;
+	end
+
+	errors &lt;&lt; Record.new(:summary, summary_message, {
+		'error.count' =&gt; error_count
+	})
+
+	return error_count
+end</code></pre>
+						</details>	</main>
+
+		
+		<footer>Documentation generated by <a href="https://github.com/socketry/utopia-project">Utopia::Project</a>.</footer>
+	</body>
+</html>
