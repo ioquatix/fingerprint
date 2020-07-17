@@ -1,28 +1,31 @@
 
-require_relative 'lib/fingerprint/version'
+require_relative "lib/fingerprint/version"
 
 Gem::Specification.new do |spec|
-	spec.name          = "fingerprint"
-	spec.version       = Fingerprint::VERSION
-	spec.authors       = ["Samuel Williams"]
-	spec.email         = ["samuel.williams@oriontransfer.co.nz"]
-	spec.description   = <<-EOF
-		Fingerprint is a general purpose data integrity tool that uses cryptographic hashes to detect changes in files and directory trees. The fingerprint command scans a directory tree and generates a fingerprint file containing the names and cryptographic hashes of the files in the tree. This snapshot can be later used to generate a list of files that have been created, deleted or modified. If so much as a single bit in the file data has changed, Fingerprint will detect it.
-	EOF
-	spec.summary       = "Fingerprint is a tool for creating checksums of entire directory structures, and comparing them for inconsistencies."
-	spec.homepage      = "http://www.codeotaku.com/projects/fingerprint"
-	spec.license       = "MIT"
-
-	spec.files         = `git ls-files`.split($/)
-	spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
-	spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
-	spec.require_paths = ["lib"]
-
-	spec.add_dependency "samovar", "~> 2.0"
+	spec.name = "fingerprint"
+	spec.version = Fingerprint::VERSION
+	
+	spec.summary = "Fingerprint is a tool for creating checksums of entire directory structures, and comparing them for inconsistencies."
+	spec.authors = ["Samuel Williams"]
+	spec.license = "MIT"
+	
+	spec.homepage = "https://github.com/ioquatix/fingerprint"
+	
+	spec.metadata = {
+		"funding_uri" => "https://github.com/sponsors/ioquatix/",
+	}
+	
+	spec.files = Dir.glob('{bin,lib}/**/*', File::FNM_DOTMATCH, base: __dir__)
+	
+	spec.executables = ["fingerprint"]
+	
+	spec.required_ruby_version = ">= 2.5"
+	
 	spec.add_dependency "build-files", "~> 1.2"
-
-	spec.add_development_dependency "covered"
+	spec.add_dependency "samovar", "~> 2.0"
+	
 	spec.add_development_dependency "bundler"
-	spec.add_development_dependency "rspec", "~> 3.4"
+	spec.add_development_dependency "covered"
 	spec.add_development_dependency "rake"
+	spec.add_development_dependency "rspec", "~> 3.4"
 end

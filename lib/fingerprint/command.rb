@@ -78,7 +78,7 @@ module Fingerprint
 				if @options[:version]
 					puts "fingerprint v#{VERSION}"
 				elsif @options[:help]
-					self.print_usage(program_name)
+					self.print_usage
 				else
 					chdir do
 						@command.call
