@@ -44,7 +44,7 @@ module Fingerprint
 				options = @options.dup
 				options[:output] = @parent.output
 				
-				error_count = Checker.check_files(@master, @copy, options)
+				error_count = Checker.check_files(@master, @copy, **options)
 
 				if @options[:fail_on_errors]
 					abort "Data inconsistent, #{error_count} error(s) found!" if error_count != 0
