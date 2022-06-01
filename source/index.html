@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		
+			<title>Overview</title>
+		
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		
+		<link rel="icon" type="image/png" href="../_static/icon.png"/>
+		<link rel="stylesheet" href="../_static/site.css" type="text/css" media="screen"/>
+		
+		<script src="../_components/jquery/jquery.min.js"></script>
+		<script src="../_components/jquery-syntax/jquery.syntax.min.js"></script>
+		<script src="../_components/mermaid/mermaid.min.js"></script>
+		
+		<script src="../_static/links.js"></script>
+		
+		<script type="text/javascript">
+		//<![CDATA[
+			jQuery(function($) {
+				$.syntax();
+			});
+			
+			let isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+			let config = {theme: 'light'};
+			if (isDarkMode) config.theme = 'dark';
+			else config.theme = 'forest';
+			mermaid.initialize(config);
+		//]]>
+		</script>
+	</head>
+
+	<body>
+		<header> › <a class="link" href="../index.html">Project</a> › <a class="link" href="index.html">Source</a></header>
+		
+		<main>
+			
+	<h1>Overview</h1>
+	
+	<ul class="index"><li>
+						<a href="Fingerprint/index.html"><code class="language-ruby">module Fingerprint</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+						<a href="Fingerprint/Checker/index.html"><code class="language-ruby">class Checker</code></a>
+						
+						
+						
+							<p>Given two fingerprints (master and copy) ensures that the copy has at least everything contained</p>
+
+					
+					<ul class="index"><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li></ul>				</li><li>
+						<a href="Fingerprint/Checksums/index.html"><code class="language-ruby">module Checksums</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li><li>
+						<a href="Fingerprint/Command/index.html"><code class="language-ruby">module Command</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+						<a href="Fingerprint/Command/Analyze/index.html"><code class="language-ruby">class Analyze</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+						<a href="Fingerprint/Command/Analyze/options/index.html"><code class="language-ruby">options</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li></ul>				</li><li>
+						<a href="Fingerprint/Command/Compare/index.html"><code class="language-ruby">class Compare</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+						<a href="Fingerprint/Command/Compare/options/index.html"><code class="language-ruby">options</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li></ul>				</li><li>
+						<a href="Fingerprint/Command/Duplicates/index.html"><code class="language-ruby">class Duplicates</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+						<a href="Fingerprint/Command/Duplicates/options/index.html"><code class="language-ruby">options</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li></ul>				</li><li>
+						<a href="Fingerprint/Command/Scan/index.html"><code class="language-ruby">class Scan</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+						<a href="Fingerprint/Command/Scan/options/index.html"><code class="language-ruby">options</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li></ul>				</li><li>
+						<a href="Fingerprint/Command/Verify/index.html"><code class="language-ruby">class Verify</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+						<a href="Fingerprint/Command/Verify/options/index.html"><code class="language-ruby">options</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li></ul>				</li><li>
+						<a href="Fingerprint/Command/Top/index.html"><code class="language-ruby">class Top</code></a>
+						
+						
+						
+					
+					<ul class="index"><li>
+						<a href="Fingerprint/Command/Top/options/index.html"><code class="language-ruby">options</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li></ul>				</li></ul>				</li><li>
+						<a href="Fingerprint/Find/index.html"><code class="language-ruby">module Find</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li><li>
+						<a href="Fingerprint/Record/index.html"><code class="language-ruby">class Record</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li><li>
+						<a href="Fingerprint/RecordSet/index.html"><code class="language-ruby">class RecordSet</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li><li>
+						<a href="Fingerprint/SparseRecordSet/index.html"><code class="language-ruby">class SparseRecordSet</code></a>
+						
+						
+						
+							<p>This record set dynamically computes data from the disk as required.</p>
+
+					
+					<ul class="index"></ul>				</li><li>
+						<a href="Fingerprint/RecordSetWrapper/index.html"><code class="language-ruby">class RecordSetWrapper</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li><li>
+						<a href="Fingerprint/RecordSetPrinter/index.html"><code class="language-ruby">class RecordSetPrinter</code></a>
+						
+						
+						
+					
+					<ul class="index"></ul>				</li><li>
+						<a href="Fingerprint/Scanner/index.html"><code class="language-ruby">class Scanner</code></a>
+						
+						
+						
+							<p>The scanner class can scan a set of directories and produce an index.</p>
+
+					
+					<ul class="index"><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li><li>
+					
+									</li></ul>				</li><li>
+					
+									</li><li>
+					
+									</li></ul>				</li></ul>
+				
+			<footer>Documentation generated by <a href="https://github.com/socketry/utopia-project">Utopia::Project</a>.</footer>
+		</main>
+	</body>
+</html>

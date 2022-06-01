@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		
+			<title>Fingerprint::Scanner</title>
+		
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		
+		<link rel="icon" type="image/png" href="../../../_static/icon.png"/>
+		<link rel="stylesheet" href="../../../_static/site.css" type="text/css" media="screen"/>
+		
+		<script src="../../../_components/jquery/jquery.min.js"></script>
+		<script src="../../../_components/jquery-syntax/jquery.syntax.min.js"></script>
+		<script src="../../../_components/mermaid/mermaid.min.js"></script>
+		
+		<script src="../../../_static/links.js"></script>
+		
+		<script type="text/javascript">
+		//<![CDATA[
+			jQuery(function($) {
+				$.syntax();
+			});
+			
+			let isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+			let config = {theme: 'light'};
+			if (isDarkMode) config.theme = 'dark';
+			else config.theme = 'forest';
+			mermaid.initialize(config);
+		//]]>
+		</script>
+	</head>
+
+	<body>
+		<header> › <a class="link" href="../../../index.html">Project</a> › <a class="link" href="../../index.html">Source</a></header>
+		
+		<main>
+			
+	<h1>Fingerprint::Scanner</h1>
+	
+	<p>
+		<code class="language-ruby">class Fingerprint::Scanner</code>
+	</p>
+	
+	<p>The scanner class can scan a set of directories and produce an index.</p>
+	
+	
+	
+	
+	<section>
+	<h2>Definitions</h2>
+	
+	<section id="Fingerprint::Scanner#initialize"><h3><code class="language-ruby">def initialize(roots, pwd: Dir.pwd, **options)</code></h3><p>Initialize the scanner to scan a given set of directories in order.
+[+options[:excludes]+]  An array of regular expressions of files to avoid indexing.
+[+options[:output]+]    An +IO+ where the results will be written.</p>
+<details>
+						<summary><h4>Implementation</h4></summary>
+						<pre><code class="language-ruby">def initialize(roots, pwd: Dir.pwd, **options)
+	@roots = roots.collect{|root| File.expand_path(root, pwd)}
+
+	@excludes = options[:excludes] || []
+	@options = options
+
+	@digests = {}
+
+	@progress = nil
+
+	unless @options[:checksums] and @options[:checksums].size &gt; 0
+		@options[:checksums] = DEFAULT_CHECKSUMS
+	end
+
+	@options[:checksums].each do |name|
+		@digests[name] = CHECKSUMS[name].call
+	end
+
+	@callback = nil
+end</code></pre>
+					</details></section><section id="Fingerprint::Scanner#header_for"><h3><code class="language-ruby">def header_for(root)</code></h3><p>Adds a header for a given path which is mainly version information.</p>
+<details>
+						<summary><h4>Implementation</h4></summary>
+						<pre><code class="language-ruby">def header_for(root)
+	Record.new(:configuration, File.expand_path(root), {
+		'options.extended' =&gt; @options[:extended] == true,
+		'options.checksums' =&gt; @options[:checksums].join(', '),
+		'summary.time.start' =&gt; Time.now,
+		'fingerprint.version' =&gt; Fingerprint::VERSION
+	})
+end</code></pre>
+					</details></section><section id="Fingerprint::Scanner#digests_for"><h3><code class="language-ruby">def digests_for(path)</code></h3><p>This code won't handle multiple threads..</p>
+<details>
+						<summary><h4>Implementation</h4></summary>
+						<pre><code class="language-ruby">def digests_for(path)
+	total = 0
+
+	@digests.each do |key, digest|
+		digest.reset
+	end
+
+	File.open(path, &quot;rb&quot;) do |file|
+		buffer = &quot;&quot;
+		while file.read(1024 * 1024 * 10, buffer)
+			total += buffer.bytesize
+			
+			@progress.call(total) if @progress
+			
+			@digests.each do |key, digest|
+				digest &lt;&lt; buffer
+			end
+		end
+	end
+
+	metadata = {}
+	
+	@digests.each do |key, digest|
+		metadata[&quot;key.&quot; + key] = digest.hexdigest
+	end
+	
+	return metadata
+end</code></pre>
+					</details></section><section id="Fingerprint::Scanner#directory_record_for"><h3><code class="language-ruby">def directory_record_for(path)</code></h3><p>Output a directory header.</p>
+<details>
+						<summary><h4>Implementation</h4></summary>
+						<pre><code class="language-ruby">def directory_record_for(path)
+	Record.new(:directory, path.relative_path, metadata_for(:directory, path))
+end</code></pre>
+					</details></section><section id="Fingerprint::Scanner#file_record_for"><h3><code class="language-ruby">def file_record_for(path)</code></h3><p>Output a file and associated metadata.</p>
+<details>
+						<summary><h4>Implementation</h4></summary>
+						<pre><code class="language-ruby">def file_record_for(path)
+	metadata = metadata_for(:file, path)
+	
+	# Should this be here or in metadata_for?
+	# metadata.merge!(digests_for(path))
+	
+	Record.new(:file, path.relative_path, metadata)
+end</code></pre>
+					</details></section><section id="Fingerprint::Scanner#excluded_record_for"><h3><code class="language-ruby">def excluded_record_for(path)</code></h3><p>Add information about excluded paths.</p>
+<details>
+						<summary><h4>Implementation</h4></summary>
+						<pre><code class="language-ruby">def excluded_record_for(path)
+	Record.new(:excluded, path.relative_path)
+end</code></pre>
+					</details></section><section id="Fingerprint::Scanner#excluded?"><h3><code class="language-ruby">def excluded?(path)</code></h3><p>Returns true if the given path should be excluded.</p>
+<details>
+						<summary><h4>Implementation</h4></summary>
+						<pre><code class="language-ruby">def excluded?(path)
+	@excludes.each do |exclusion|
+		if path.match(exclusion)
+			return true
+		end
+	end
+
+	return false
+end</code></pre>
+					</details></section><section id="Fingerprint::Scanner#scan"><h3><code class="language-ruby">def scan(recordset)</code></h3><p>Run the scanning process.</p>
+<details>
+						<summary><h4>Implementation</h4></summary>
+						<pre><code class="language-ruby">def scan(recordset)
+	excluded_count = 0
+	processed_count = 0
+	processed_size = 0
+	directory_count = 0
+
+	total_count = 0
+	total_size = 0
+
+	# Estimate the number of files and amount of data to process..
+	if @options[:progress]
+		@roots.each do |root|
+			Find.find(root) do |path|
+				# Some special files fail here, and this was the simplest fix.
+				Find.prune unless File.exist?(path)
+				
+				if @options[:progress]
+					$stderr.puts &quot;# Scanning: #{path}&quot;
+				end
+				
+				if excluded?(path)
+					Find.prune if path.directory?
+				elsif path.symlink?
+					total_count += 1
+				elsif path.file?
+					total_count += 1
+					total_size += File.size(path)
+				end
+			end
+		end
+	end
+	
+	if @options[:progress]
+		@progress = lambda do |read_size|
+			$stderr.puts &quot;# Progress: File #{processed_count} / #{total_count}; Byte #{processed_size + read_size} / #{total_size} = #{sprintf('%0.3f%%', (processed_size + read_size).to_f / total_size.to_f * 100.0)} (#{read_size}, #{processed_size}, #{total_size})&quot;
+		end
+	end
+	
+	@roots.each do |root|
+		recordset &lt;&lt; header_for(root)
+		
+		Find.find(root) do |path|
+			# Some special files fail here, and this was the simplest fix.
+			Find.prune unless File.exist?(path)
+			
+			if @options[:progress]
+				$stderr.puts &quot;# Path: #{path.relative_path}&quot;
+			end
+			
+			if excluded?(path)
+				excluded_count += 1
+				
+				if @options[:verbose]
+					recordset &lt;&lt; excluded_record_for(path)
+				end
+				
+				Find.prune if path.directory?
+			elsif path.directory?
+				directory_count += 1
+				
+				recordset &lt;&lt; directory_record_for(path)
+			elsif path.symlink?
+				recordset &lt;&lt; link_record_for(path)
+				
+				processed_count += 1
+			elsif path.file?
+				recordset &lt;&lt; file_record_for(path)
+
+				processed_count += 1
+				processed_size += File.size(path)
+			else
+				excluded_count += 1
+				
+				if @options[:verbose]
+					recordset &lt;&lt; excluded_record_for(path)
+				end
+			end
+			
+			# Print out a progress summary if requested
+			@progress.call(0) if @progress
+		end
+	end
+	
+	summary_message = &quot;#{processed_count} files processed.&quot;
+
+	# Output summary
+	recordset &lt;&lt; Record.new(:summary, summary_message, {
+		'summary.directories' =&gt; directory_count,
+		'summary.files' =&gt; processed_count,
+		'summary.size' =&gt; processed_size,
+		'summary.excluded' =&gt; excluded_count,
+		'summary.time.end' =&gt; Time.now
+	})
+	
+	return recordset
+end</code></pre>
+					</details></section><section id="Fingerprint::Scanner.scan_paths"><h3><code class="language-ruby">def self.scan_paths(paths, **options)</code></h3><p>A helper function to scan a set of directories.</p>
+<details>
+						<summary><h4>Implementation</h4></summary>
+						<pre><code class="language-ruby">def self.scan_paths(paths, **options)
+	if options[:output]
+		if options.key? :recordset
+			recordset = options[:recordset]
+		else
+			recordset = RecordSet.new
+		end
+		
+		options[:recordset] = RecordSetPrinter.new(recordset, options[:output])
+	end
+
+	scanner = Scanner.new(paths, **options)
+
+	scanner.scan(options[:recordset])
+
+	return options[:recordset]
+end</code></pre>
+					</details></section>	</section>
+	
+	
+
+				
+			<footer>Documentation generated by <a href="https://github.com/socketry/utopia-project">Utopia::Project</a>.</footer>
+		</main>
+	</body>
+</html>
+
