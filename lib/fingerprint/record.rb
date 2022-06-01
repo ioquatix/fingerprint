@@ -46,6 +46,10 @@ module Fingerprint
 		attr :metadata
 		attr :keys
 
+		def file?
+			@mode == :file
+		end
+
 		def [](key)
 			@metadata[key]
 		end
@@ -95,29 +99,42 @@ module Fingerprint
 			self.new.tap{|record_set| record_set.parse(io)}
 		end
 		
-		def initialize
+		def initialize(root = nil)
+			@root = root
 			@records = []
 			@paths = {}
 			@keys = {}
 			
 			@configuration = nil
-
+			
 			@callback = nil
 		end
-
+		
+		attr :root
+		
 		attr :records
 		attr :paths
 		attr :keys
-
+		
 		attr :configuration
-
+		
+		def full_path(path)
+			Build::Files::Path.join(@root, path)
+		end
+		
 		def <<(record)
 			@records << record
+			
 			if record.mode == :configuration
-				# What should we do if we get multiple configurations?
+				if @configuration
+					raise "Multiple configurations detected!"
+				end
+				
 				@configuration = record
+				@root = @configuration.path
 			else
 				@paths[record.path] = record
+				
 				record.keys.each do |key|
 					@keys[key] ||= {}
 					
@@ -125,7 +142,7 @@ module Fingerprint
 				end
 			end
 		end
-
+		
 		def include?(path)
 			@paths.include?(path)
 		end

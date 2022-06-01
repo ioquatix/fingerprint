@@ -42,10 +42,8 @@ module Fingerprint
 			attr :duplicates_recordset
 			
 			def call
-				@options[:output] = @parent.output
-				
 				@duplicates_recordset = RecordSet.new
-				results = RecordSetPrinter.new(duplicates_recordset, @options[:output])
+				results = RecordSetPrinter.new(@duplicates_recordset, @parent.output)
 				
 				master_file_path = @master
 				File.open(master_file_path) do |master_file|
@@ -67,7 +65,11 @@ module Fingerprint
 							copy_recordset.parse(copy_file)
 							
 							copy_recordset.records.each do |record|
+								next unless record.file?
+								
 								record.metadata['fingerprint'] = copy_file_path
+								record.metadata['full_path'] = copy_recordset.full_path(record.path)
+								
 								# We need to see if the record exists in the master
 								
 								if @options[:verbose]
