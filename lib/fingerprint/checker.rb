@@ -77,7 +77,7 @@ module Fingerprint
 				end
 				
 				if @options[:progress]
-					$stderr.puts "# Progress: File #{processed_count} / #{total_count}; Byte #{processed_size} / #{total_size} = #{sprintf('%0.2f%', processed_size.to_f / total_size.to_f * 100.0)}"
+					$stderr.puts "# Progress: File #{processed_count} / #{total_count}; Byte #{processed_size} / #{total_size} = #{sprintf('%0.2f%%', processed_size.to_f / total_size.to_f * 100.0)}"
 
 					processed_size += (record['file.size'] || 0).to_i
 				end

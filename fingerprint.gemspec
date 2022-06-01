@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 
 require_relative "lib/fingerprint/version"
 
@@ -6,8 +7,11 @@ Gem::Specification.new do |spec|
 	spec.version = Fingerprint::VERSION
 	
 	spec.summary = "Fingerprint is a tool for creating checksums of entire directory structures, and comparing them for inconsistencies."
-	spec.authors = ["Samuel Williams"]
+	spec.authors = ["Samuel Williams", "Glenn Rempe"]
 	spec.license = "MIT"
+	
+	spec.cert_chain  = ['release.cert']
+	spec.signing_key = File.expand_path('~/.gem/release.pem')
 	
 	spec.homepage = "https://github.com/ioquatix/fingerprint"
 	

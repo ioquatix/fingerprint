@@ -259,7 +259,7 @@ module Fingerprint
 			
 			if @options[:progress]
 				@progress = lambda do |read_size|
-					$stderr.puts "# Progress: File #{processed_count} / #{total_count}; Byte #{processed_size + read_size} / #{total_size} = #{sprintf('%0.3f%', (processed_size + read_size).to_f / total_size.to_f * 100.0)} (#{read_size}, #{processed_size}, #{total_size})"
+					$stderr.puts "# Progress: File #{processed_count} / #{total_count}; Byte #{processed_size + read_size} / #{total_size} = #{sprintf('%0.3f%%', (processed_size + read_size).to_f / total_size.to_f * 100.0)} (#{read_size}, #{processed_size}, #{total_size})"
 				end
 			end
 			
