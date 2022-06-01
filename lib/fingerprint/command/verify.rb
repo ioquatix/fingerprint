@@ -60,11 +60,7 @@ module Fingerprint
 				options = @options.dup
 				options[:output] = @parent.output
 
-				master = RecordSet.new
-
-				File.open(input_file, "r") do |io|
-					master.parse(io)
-				end
+				master = RecordSet.load_file(input_file)
 
 				if master.configuration
 					options.merge!(master.configuration.options)

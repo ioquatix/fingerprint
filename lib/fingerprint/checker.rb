@@ -98,17 +98,10 @@ module Fingerprint
 		def self.check_files(master, copy, **options, &block)
 			# New API that takes two RecordSets...
 			
-			File.open(master) do |master_file|
-				File.open(copy) do |copy_file|
-					master_recordset = RecordSet.new
-					master_recordset.parse(master_file)
-					
-					copy_recordset = RecordSet.new
-					copy_recordset.parse(copy_file)
-
-					verify(master_recordset, copy_recordset, **options, &block)
-				end
-			end
+			master_recordset = RecordSet.load_file(master)
+			copy_recordset = RecordSet.load_file(copy)
+			
+			verify(master_recordset, copy_recordset, **options, &block)
 		end
 
 		# Helper function to check two fingerprint files.

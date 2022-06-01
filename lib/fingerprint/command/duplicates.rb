@@ -33,6 +33,8 @@ module Fingerprint
 				option "-i/--inverse", "Invert the output, i.e. show files which are not duplicates."
 				option "-x/--extended", "Include extended information about files and directories."
 				
+				option "--delete", "Delete duplicates."
+				
 				option "--verbose", "Verbose output, e.g. what is happening."
 			end
 			
@@ -41,56 +43,57 @@ module Fingerprint
 			
 			attr :duplicates_recordset
 			
+			def delete(path)
+				FileUtils.rm_f(path)
+			end
+			
 			def call
 				@duplicates_recordset = RecordSet.new
 				results = RecordSetPrinter.new(@duplicates_recordset, @parent.output)
 				
 				master_file_path = @master
-				File.open(master_file_path) do |master_file|
-					master_recordset = RecordSet.new
-					master_recordset.parse(master_file)
+				master_recordset = RecordSet.load_file(master_file_path)
 					
-					ignore_similar = false
+				ignore_similar = false
+				
+				copy_file_paths = @copies
+				
+				if copy_file_paths.size == 0
+					copy_file_paths = [master_file_path]
+					ignore_similar = true
+				end
+				
+				copy_file_paths.each do |copy_file_path|
+					copy_recordset = RecordSet.load_file(copy_file_path)
 					
-					copy_file_paths = @copies
-					
-					if copy_file_paths.size == 0
-						copy_file_paths = [master_file_path]
-						ignore_similar = true
-					end
-					
-					copy_file_paths.each do |copy_file_path|
-						File.open(copy_file_path) do |copy_file|
-							copy_recordset = RecordSet.new
-							copy_recordset.parse(copy_file)
+					copy_recordset.records.each do |record|
+						next unless record.file?
+						
+						record.metadata['fingerprint'] = copy_file_path
+						
+						# We need to see if the record exists in the master
+						
+						if @options[:verbose]
+							$stderr.puts "Checking #{record.inspect}"
+						end
+						
+						main_record = master_recordset.find_by_key(record)
+						
+						# If we are scanning the same index, don't print out every file, just those that are duplicates within the single file.
+						if ignore_similar && main_record && (main_record.path == record.path)
+							main_record = nil
+						end
+						
+						if main_record
+							record.metadata['original.path'] = main_record.path
+							record.metadata['original.fingerprint'] = master_file_path
+							results << record if !@options[:inverse]
 							
-							copy_recordset.records.each do |record|
-								next unless record.file?
-								
-								record.metadata['fingerprint'] = copy_file_path
-								record.metadata['full_path'] = copy_recordset.full_path(record.path)
-								
-								# We need to see if the record exists in the master
-								
-								if @options[:verbose]
-									$stderr.puts "Checking #{record.inspect}"
-								end
-								
-								main_record = master_recordset.find_by_key(record)
-								
-								# If we are scanning the same index, don't print out every file, just those that are duplicates within the single file.
-								if ignore_similar && main_record && (main_record.path == record.path)
-									main_record = nil
-								end
-								
-								if main_record
-									record.metadata['original.path'] = main_record.path
-									record.metadata['original.fingerprint'] = master_file_path
-									results << record if !@options[:inverse]
-								else
-									results << record if @options[:inverse]
-								end
+							if @options[:delete]
+								delete(copy_recordset.full_path(record.path))
 							end
+						else
+							results << record if @options[:inverse]
 						end
 					end
 				end

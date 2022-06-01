@@ -90,13 +90,16 @@ module Fingerprint
 	
 	class RecordSet
 		def self.load_file(path)
+			path = File.expand_path(path)
+			root = File.dirname(path)
+			
+			record_set = self.new(root)
+			
 			File.open(path, "r") do |io|
-				self.load(io)
+				record_set.parse(io)
 			end
-		end
-		
-		def self.load(io)
-			self.new.tap{|record_set| record_set.parse(io)}
+			
+			return record_set
 		end
 		
 		def initialize(root = nil)
@@ -131,7 +134,7 @@ module Fingerprint
 				end
 				
 				@configuration = record
-				@root = @configuration.path
+				@root ||= @configuration.path
 			else
 				@paths[record.path] = record
 				
@@ -239,7 +242,7 @@ module Fingerprint
 				elsif line.match(/^\s+([a-zA-Z\.0-9]+)\s+(.*)$/)
 					metadata[$1] = $2
 				else
-					$stderr.puts "Unhandled line: #{line}"
+					raise "Unhandled line: #{line}"
 				end
 			end
 
