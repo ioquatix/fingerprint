@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'fingerprint/record'
+require_relative 'record'
 
 module Fingerprint
 	# Given two fingerprints (master and copy) ensures that the copy has at least everything contained
