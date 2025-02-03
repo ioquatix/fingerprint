@@ -9,7 +9,7 @@ require "tmpdir"
 
 module Fingerprint
 	SampleFingerprint = Sus::Shared("sample fingerprint") do
-		let(:source_directory) {File.expand_path("../../lib", __dir__)}
+		let(:source_directory) {File.expand_path("../..", __dir__)}
 		let(:fingerprint_path) {File.join(@root, "test.fingerprint")}
 		
 		around do |&block|

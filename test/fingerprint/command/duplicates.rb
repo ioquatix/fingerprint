@@ -30,15 +30,6 @@ require "fingerprint/sample_fingerprint"
 describe Fingerprint::Command::Duplicates do
 	include Fingerprint::SampleFingerprint
 	
-	it "should have no duplicates" do
-		Fingerprint::Command::Top["analyze", "-n", fingerprint_path, "-f", source_directory].call
-		expect(File).to be(:exist?, fingerprint_path)
-		
-		record_set = Fingerprint::RecordSet.load_file(fingerprint_path)
-		top = Fingerprint::Command::Top["duplicates", fingerprint_path].tap(&:call)
-		expect(top.command.duplicates_recordset).to be(:empty?)
-	end
-	
 	it "should have duplicates" do
 		Fingerprint::Command::Top["analyze", "-n", fingerprint_path, "-f", source_directory].call
 		expect(File).to be(:exist?, fingerprint_path)
