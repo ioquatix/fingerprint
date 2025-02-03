@@ -1,0 +1,53 @@
+C /Users/samuel/Developer/ioquatix/fingerprint/lib
+	fingerprint.version 3.4.0
+	options.checksums SHA2.256
+	options.extended false
+	summary.time.start 2025-02-03 19:28:21 +1300
+D 
+D fingerprint
+F fingerprint/checker.rb
+	file.size 4000
+	key.SHA2.256 09b437ff807bc5c70726dbbd2263ed460693cb304ae505a34674f11229ec3122
+F fingerprint/checksums.rb
+	file.size 232
+	key.SHA2.256 af3fd8560ed7ee79cbfb14fa076e6abfcfe00a0eaf047f21064288faf1d5c2b8
+D fingerprint/command
+F fingerprint/command/analyze.rb
+	file.size 1665
+	key.SHA2.256 78d058e9d464ca435f5415bb89479e7f13526bc7f4f2a64f9420cd0a6969236e
+F fingerprint/command/compare.rb
+	file.size 1088
+	key.SHA2.256 7d841ce15feb99e281219f932dcf45c3cbbd6ec2fc1d475b2ffaf58f21c05884
+F fingerprint/command/duplicates.rb
+	file.size 2407
+	key.SHA2.256 0c23ba6f5ff385f918bdbbb818d48f37aa710c8dc5c9e5c1b1cb5cdaefc52847
+F fingerprint/command/scan.rb
+	file.size 1210
+	key.SHA2.256 00f71b0f30e2764204bff60e9113a571d378d2e73953954be1214f4139abba3f
+F fingerprint/command/verify.rb
+	file.size 1896
+	key.SHA2.256 a78818ad8c08bbd3fb6c64badf826c4a45a1e7b445f0df1ad06df7c5a1d00bfb
+F fingerprint/command.rb
+	file.size 1452
+	key.SHA2.256 4abfd37a01d313711c445568e2ff4bc0f00a360c11a210c54be54e36056f10a7
+F fingerprint/find.rb
+	file.size 479
+	key.SHA2.256 4e2df4f46a7f1aacc49478871c541e6f72426ecccdb6d5c2adefb6516bdc95c8
+F fingerprint/record.rb
+	file.size 5404
+	key.SHA2.256 27e300857dead8408a1ad7e3d97b0cce3b51f4d833389697b810ed830ec7200e
+F fingerprint/scanner.rb
+	file.size 8029
+	key.SHA2.256 5d14c5e68fc5bf8d0d8300308a2b53084a6d8d5ad402eead265b0a6b74a8dfb3
+F fingerprint/version.rb
+	file.size 152
+	key.SHA2.256 5652b14d56314bd8c326990fa3ce9c0bea304189b234f49fdee92dcc266916d4
+F fingerprint.rb
+	file.size 1836
+	key.SHA2.256 eae528cb9930810eabebe9611a2445c7d2832211f21daa5a06a4fbf584f504f5
+S 13 files processed.
+	summary.directories 3
+	summary.excluded 0
+	summary.files 13
+	summary.size 29850
+	summary.time.end 2025-02-03 19:28:21 +1300

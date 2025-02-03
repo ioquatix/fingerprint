@@ -1,4 +1,10 @@
-# Copyright, 2019, by Samuel G. D. Williams. <http://www.codeotaku.com>
+#!/usr/bin/env rspec
+# frozen_string_literal: true
+
+# Released under the MIT License.
+# Copyright, 2016-2025, by Samuel Williams.
+
+# Copyright, 2016, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,14 +24,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'bundler/setup'
-require 'covered/rspec'
+require "fingerprint/command"
+require "fingerprint/sample_fingerprint"
 
-RSpec.configure do |config|
-	# Enable flags like --only-failures and --next-failure
-	config.example_status_persistence_file_path = ".rspec_status"
+describe Fingerprint::Command::Analyze do
+	include Fingerprint::SampleFingerprint
 	
-	config.expect_with :rspec do |c|
-		c.syntax = :expect
+	it "should analyze and verify files" do
+		Fingerprint::Command::Top["analyze", "-n", fingerprint_path].call
+		expect(File).to be(:exist?, fingerprint_path)
+		
+		top = Fingerprint::Command::Top["verify", "-n", fingerprint_path].tap(&:call)
+		expect(top.command.error_count).to be == 0
 	end
 end

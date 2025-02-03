@@ -10,25 +10,23 @@ Gem::Specification.new do |spec|
 	spec.authors = ["Samuel Williams", "Glenn Rempe"]
 	spec.license = "MIT"
 	
-	spec.cert_chain  = ['release.cert']
-	spec.signing_key = File.expand_path('~/.gem/release.pem')
+	spec.cert_chain  = ["release.cert"]
+	spec.signing_key = File.expand_path("~/.gem/release.pem")
 	
 	spec.homepage = "https://github.com/ioquatix/fingerprint"
 	
 	spec.metadata = {
+		"documentation_uri" => "https://ioquatix.github.io/fingerprint/",
 		"funding_uri" => "https://github.com/sponsors/ioquatix/",
+		"source_code_uri" => "https://github.com/ioquatix/fingerprint.git",
 	}
 	
-	spec.files = Dir.glob('{bin,lib}/**/*', File::FNM_DOTMATCH, base: __dir__)
+	spec.files = Dir.glob(["{bin,lib}/**/*", "*.md"], File::FNM_DOTMATCH, base: __dir__)
 	
 	spec.executables = ["fingerprint"]
 	
-	spec.required_ruby_version = ">= 2.5"
+	spec.required_ruby_version = ">= 3.1"
 	
 	spec.add_dependency "build-files", "~> 1.2"
 	spec.add_dependency "samovar", "~> 2.0"
-	
-	spec.add_development_dependency "bundler"
-	spec.add_development_dependency "covered"
-	spec.add_development_dependency "rspec", "~> 3.4"
 end

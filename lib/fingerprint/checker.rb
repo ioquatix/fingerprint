@@ -1,24 +1,9 @@
-# Copyright, 2011, by Samuel G. D. Williams. <http://www.codeotaku.com>
-# 
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-# 
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-# 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+# frozen_string_literal: true
 
-require_relative 'record'
+# Released under the MIT License.
+# Copyright, 2009-2025, by Samuel Williams.
+
+require_relative "record"
 
 module Fingerprint
 	# Given two fingerprints (master and copy) ensures that the copy has at least everything contained
@@ -47,7 +32,7 @@ module Fingerprint
 			# in the destination:
 			total_count = @master.records.count
 			processed_size = 0
-			total_size = @master.records.inject(0) { |count, record| count + (record['file.size'] || 0).to_i }
+			total_size = @master.records.inject(0) { |count, record| count + (record["file.size"] || 0).to_i }
 			
 			if @options[:additions]
 				copy_paths = @copy.paths.dup
@@ -79,7 +64,7 @@ module Fingerprint
 				if @options[:progress]
 					$stderr.puts "# Progress: File #{processed_count} / #{total_count}; Byte #{processed_size} / #{total_size} = #{sprintf('%0.2f%%', processed_size.to_f / total_size.to_f * 100.0)}"
 
-					processed_size += (record['file.size'] || 0).to_i
+					processed_size += (record["file.size"] || 0).to_i
 				end
 			end
 			
@@ -119,8 +104,8 @@ module Fingerprint
 				error_count += 1
 
 				metadata = {
-					'error.code' => result,
-					'error.message' => message
+					"error.code" => result,
+					"error.message" => message
 				}
 
 				if result == :addition
@@ -148,11 +133,10 @@ module Fingerprint
 			end
 
 			errors << Record.new(:summary, summary_message, {
-				'error.count' => error_count
+				"error.count" => error_count
 			})
 
 			return error_count
 		end
-
 	end
 end

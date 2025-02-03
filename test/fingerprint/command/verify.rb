@@ -1,4 +1,8 @@
 #!/usr/bin/env rspec
+# frozen_string_literal: true
+
+# Released under the MIT License.
+# Copyright, 2016-2025, by Samuel Williams.
 
 # Copyright, 2016, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
@@ -20,14 +24,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'fingerprint'
+require "fingerprint/command"
+require "fingerprint/sample_fingerprint"
 
-describe Fingerprint do
-	it "should check the same path and not report any differences" do
-		expect(Fingerprint).to be_identical(__dir__, __dir__)
-	end
+describe Fingerprint::Command::Verify do
+	include Fingerprint::SampleFingerprint
 	
-	it "should check different paths and report differences" do
-		expect(Fingerprint).to_not be_identical(__dir__, File.expand_path("../", __dir__))
+	it "should analyze a different path" do
+		Fingerprint::Command::Top["analyze", "-n", fingerprint_path, "-f", source_directory].call
+		expect(File).to be(:exist?, fingerprint_path)
+		
+		top = Fingerprint::Command::Top["verify", "-n", fingerprint_path, "-f", source_directory].tap(&:call)
+		expect(top.command.error_count).to be == 0
 	end
 end

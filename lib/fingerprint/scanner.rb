@@ -1,43 +1,29 @@
-# Copyright, 2011, by Samuel G. D. Williams. <http://www.codeotaku.com>
-# 
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-# 
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-# 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+# frozen_string_literal: true
 
-require 'stringio'
-require 'etc'
-require 'digest/sha2'
+# Released under the MIT License.
+# Copyright, 2009-2025, by Samuel Williams.
+# Copyright, 2016-2019, by Glenn Rempe.
 
-require_relative 'find'
-require_relative 'record'
-require_relative 'version'
+require "stringio"
+require "etc"
+require "digest/sha2"
+
+require_relative "find"
+require_relative "record"
+require_relative "version"
 
 module Fingerprint
 	INDEX_FINGERPRINT = "index.fingerprint"
 	
 	CHECKSUMS = {
-		'MD5' => lambda { Digest::MD5.new },
-		'SHA1' => lambda { Digest::SHA1.new },
-		'SHA2.256' => lambda { Digest::SHA2.new(256) },
-		'SHA2.384' => lambda { Digest::SHA2.new(384) },
-		'SHA2.512' => lambda { Digest::SHA2.new(512) },
+		"MD5" => lambda { Digest::MD5.new },
+		"SHA1" => lambda { Digest::SHA1.new },
+		"SHA2.256" => lambda { Digest::SHA2.new(256) },
+		"SHA2.384" => lambda { Digest::SHA2.new(384) },
+		"SHA2.512" => lambda { Digest::SHA2.new(512) },
 	}
 
-	DEFAULT_CHECKSUMS = ['SHA2.256']
+	DEFAULT_CHECKSUMS = ["SHA2.256"]
 
 	# The scanner class can scan a set of directories and produce an index.
 	class Scanner
@@ -73,10 +59,10 @@ module Fingerprint
 		# Adds a header for a given path which is mainly version information.
 		def header_for(root)
 			Record.new(:configuration, File.expand_path(root), {
-				'options.extended' => @options[:extended] == true,
-				'options.checksums' => @options[:checksums].join(', '),
-				'summary.time.start' => Time.now,
-				'fingerprint.version' => Fingerprint::VERSION
+				"options.extended" => @options[:extended] == true,
+				"options.checksums" => @options[:checksums].join(", "),
+				"summary.time.start" => Time.now,
+				"fingerprint.version" => Fingerprint::VERSION
 			})
 		end
 
@@ -89,7 +75,8 @@ module Fingerprint
 			end
 
 			File.open(path, "rb") do |file|
-				buffer = ""
+				buffer = String.new
+				
 				while file.read(1024 * 1024 * 10, buffer)
 					total += buffer.bytesize
 					
@@ -114,29 +101,29 @@ module Fingerprint
 			metadata = {}
 			
 			if type == :link
-				metadata['file.symlink'] = File.readlink(path)
+				metadata["file.symlink"] = File.readlink(path)
 			else
 				stat = File.stat(path)
 
 				if type == :file
-					metadata['file.size'] = stat.size
+					metadata["file.size"] = stat.size
 					digests = digests_for(path)
 					metadata.merge!(digests)
 				elsif type == :blockdev or type == :chardev
-					metadata['file.dev_major'] = stat.dev_major
-					metadata['file.dev_minor'] = stat.dev_minor
+					metadata["file.dev_major"] = stat.dev_major
+					metadata["file.dev_minor"] = stat.dev_minor
 				end
 
 				# Extended information
 				if @options[:extended]
-					metadata['posix.time.modified'] = File.mtime(path)
+					metadata["posix.time.modified"] = File.mtime(path)
 
-					metadata['posix.mode'] = stat.mode.to_s(8)
+					metadata["posix.mode"] = stat.mode.to_s(8)
 
-					metadata['posix.permissions.user.id'] = stat.uid
-					metadata['posix.permissions.user.name'] = Etc.getpwuid(stat.uid).name
-					metadata['posix.permissions.group.id'] = stat.gid
-					metadata['posix.permissions.group.name'] = Etc.getgrgid(stat.gid).name
+					metadata["posix.permissions.user.id"] = stat.uid
+					metadata["posix.permissions.user.name"] = Etc.getpwuid(stat.uid).name
+					metadata["posix.permissions.group.id"] = stat.gid
+					metadata["posix.permissions.group.name"] = Etc.getgrgid(stat.gid).name
 				end
 			end
 			
@@ -312,11 +299,11 @@ module Fingerprint
 
 			# Output summary
 			recordset << Record.new(:summary, summary_message, {
-				'summary.directories' => directory_count,
-				'summary.files' => processed_count,
-				'summary.size' => processed_size,
-				'summary.excluded' => excluded_count,
-				'summary.time.end' => Time.now
+				"summary.directories" => directory_count,
+				"summary.files" => processed_count,
+				"summary.size" => processed_size,
+				"summary.excluded" => excluded_count,
+				"summary.time.end" => Time.now
 			})
 			
 			return recordset

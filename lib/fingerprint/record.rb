@@ -1,35 +1,19 @@
-# Copyright, 2011, by Samuel G. D. Williams. <http://www.codeotaku.com>
-# 
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-# 
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-# 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+# frozen_string_literal: true
 
-require 'set'
+# Released under the MIT License.
+# Copyright, 2011-2025, by Samuel Williams.
+
+require "set"
 
 module Fingerprint
-
 	MODES = {
-		:configuration => 'C',
-		:file => 'F',
-		:link => 'L',
-		:directory => 'D',
-		:summary => 'S',
-		:warning => 'W',
-		:excluded => '#',
+		:configuration => "C",
+		:file => "F",
+		:link => "L",
+		:directory => "D",
+		:summary => "S",
+		:warning => "W",
+		:excluded => "#",
 	}
 
 	class Record
@@ -71,8 +55,8 @@ module Fingerprint
 		def options
 			options = {}
 			
-			options[:extended] = true if @metadata['options.extended'] == 'true'
-			options[:checksums] = @metadata['options.checksums'].split(/[\s,]+/) if @metadata['options.checksums']
+			options[:extended] = true if @metadata["options.extended"] == "true"
+			options[:checksums] = @metadata["options.checksums"].split(/[\s,]+/) if @metadata["options.checksums"]
 			
 			return options
 		end
@@ -200,7 +184,7 @@ module Fingerprint
 
 				# Are the records the same size? We put this check second because we do this as a last resort to
 				# ensure that the file hasn't been deliberately tampered with.
-				if main.metadata['size'] and other.metadata['size'] and main.metadata['size'] != other.metadata['size']
+				if main.metadata["size"] and other.metadata["size"] and main.metadata["size"] != other.metadata["size"]
 					return :size_different, "File size differs"
 				end
 

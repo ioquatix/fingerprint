@@ -1,4 +1,8 @@
 #!/usr/bin/env rspec
+# frozen_string_literal: true
+
+# Released under the MIT License.
+# Copyright, 2016-2025, by Samuel Williams.
 
 # Copyright, 2016, by Samuel G. D. Williams. <http://www.codeotaku.com>
 # 
@@ -20,20 +24,27 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'fingerprint/command'
+require "fingerprint/command"
+require "fingerprint/sample_fingerprint"
 
-require_relative 'source_fingerprint'
-
-RSpec.describe Fingerprint::Command::Verify do
-	include_context "source fingerprint"
+describe Fingerprint::Command::Duplicates do
+	include Fingerprint::SampleFingerprint
 	
-	it "should analyze a different path" do
-		Fingerprint::Command::Top["analyze", "-n", fingerprint_name, "-f", source_directory].call
+	it "should have no duplicates" do
+		Fingerprint::Command::Top["analyze", "-n", fingerprint_path, "-f", source_directory].call
+		expect(File).to be(:exist?, fingerprint_path)
 		
-		expect(File).to be_exist(fingerprint_name)
+		record_set = Fingerprint::RecordSet.load_file(fingerprint_path)
+		top = Fingerprint::Command::Top["duplicates", fingerprint_path].tap(&:call)
+		expect(top.command.duplicates_recordset).to be(:empty?)
+	end
+	
+	it "should have duplicates" do
+		Fingerprint::Command::Top["analyze", "-n", fingerprint_path, "-f", source_directory].call
+		expect(File).to be(:exist?, fingerprint_path)
 		
-		top = Fingerprint::Command::Top["verify", "-n", fingerprint_name, "-f", source_directory].tap(&:call)
-		
-		expect(top.command.error_count).to be == 0
+		record_set = Fingerprint::RecordSet.load_file(fingerprint_path)
+		top = Fingerprint::Command::Top["duplicates", fingerprint_path, fingerprint_path].tap(&:call)
+		expect(top.command.duplicates_recordset).not.to be(:empty?)
 	end
 end
